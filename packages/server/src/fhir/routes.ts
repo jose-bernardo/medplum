@@ -73,7 +73,7 @@ fhirRouter.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-fhirRouter.use('/:resourceType', (req: Request, res: Response, next: NextFunction) => {
+fhirRouter.use('/:resourceType/:id', (req: Request, res: Response, next: NextFunction) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
