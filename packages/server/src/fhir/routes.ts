@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
+import { allOk, ContentType, isOk, OperationOutcomeError, parseJWTPayload } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -289,7 +289,11 @@ protectedRoutes.use(
     };
 
     console.log(`${req.method} ${req.url}`);
-    console.log(ctx.accessToken);
+
+    if (ctx.accessToken != undefined) {
+      const token = parseJWTPayload(ctx.accessToken)
+      console.log(token);
+    }
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (result.length === 1) {
