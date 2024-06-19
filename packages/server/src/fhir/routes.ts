@@ -73,6 +73,11 @@ fhirRouter.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+fhirRouter.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 // Public routes do not require authentication
 const publicRoutes = Router();
 fhirRouter.use(publicRoutes);

@@ -73,3 +73,6 @@ medplum-server.tar.gz
 
 # Agent artifacts
 packages/agent/*agent-*-linux*
+
+# JetBrains stuff
+.idea/
