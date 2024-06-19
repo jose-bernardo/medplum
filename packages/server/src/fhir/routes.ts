@@ -289,6 +289,7 @@ protectedRoutes.use(
     };
 
     console.log(`${req.method} ${req.url}`);
+    console.log(ctx.accessToken);
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (result.length === 1) {
