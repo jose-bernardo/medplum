@@ -73,11 +73,6 @@ fhirRouter.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-fhirRouter.use('/:resourceType/:id', (req: Request, res: Response, next: NextFunction) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
 // Public routes do not require authentication
 const publicRoutes = Router();
 fhirRouter.use(publicRoutes);
@@ -292,6 +287,8 @@ protectedRoutes.use(
       body: req.body,
       headers: req.headers,
     };
+
+    console.log(`${req.method} ${req.url}`);
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (result.length === 1) {
