@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
+import { allOk, ContentType, isOk, OperationOutcomeError, parseJWTPayload } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -291,12 +291,24 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    console.log(request)
     if (request.body.resourceType != 'Bundle'
       && request.pathname != '/$graphql'
-      && request.method == 'POST') {
+      && request.method == 'POST'
+      && req.headers.authorization != undefined) {
       request.body.id = randomUUID();
-      console.log(request)
+
+      const requestor = parseJWTPayload(req.headers.authorization).username;
+
+      console.log(request);
+      console.log(requestor);
+
+      if (!(requestor in requests)) {
+        requests[requestor] = [request];
+      } else {
+        requests[requestor].push(request);
+      }
+
+      console.log(requests);
     }
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
