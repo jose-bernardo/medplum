@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError, parseJWTPayload } from '@medplum/core';
+import { allOk, badRequest, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -40,8 +40,9 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
+import { verifyAsset } from './fabric';
 
-let requests: {[key: string]: [FhirRequest] } = {}
+let requests: FhirRequest[] = [];
 
 export const fhirRouter = Router();
 
@@ -104,6 +105,14 @@ protectedRoutes.get('/:resourceType/([$]|%24)csv', asyncWrap(csvHandler));
 // Agent $push operation (cannot use FhirRouter due to HL7 and DICOM output)
 protectedRoutes.post('/Agent/([$]|%24)push', agentPushHandler);
 protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
+
+// Confirm request
+publicRoutes.post('/confirm', asyncWrap(async (req: Request, res: Response) => {
+  const resource = await verifyAsset(req.body.id);
+  console.log(resource);
+  requests.filter(item => item.body.id == req.body.id);
+  sendOutcome(res, allOk);
+}));
 
 // Bot $execute operation
 // Allow extra path content after the "$execute" to support external callers who append path info
@@ -297,18 +306,12 @@ protectedRoutes.use(
       && req.headers.authorization != undefined) {
       request.body.id = randomUUID();
 
-      const requestor = parseJWTPayload(req.headers.authorization).username;
+      requests.push(request);
 
-      console.log(request);
-      console.log(requestor);
-
-      if (!(requestor in requests)) {
-        requests[requestor] = [request];
-      } else {
-        requests[requestor].push(request);
+      const confirm = await confirmRequest(request);
+      if (!confirm) {
+        throw new OperationOutcomeError(badRequest('Failed to confirm request'));
       }
-
-      console.log(requests);
     }
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
@@ -322,3 +325,23 @@ protectedRoutes.use(
     }
   })
 );
+
+async function confirmRequest(request: FhirRequest): Promise<boolean> {
+  return new Promise((resolve) => {
+    const checkInterval = setInterval(() => {
+      if (!(requests.includes(request))) {
+        clearInterval(checkInterval);
+        clearTimeout(checkInterval);
+        resolve(true);
+      } else {
+        console.log('Still needing confirmation.')
+      }
+    }, 1000);
+
+    setTimeout((): void => {
+      clearInterval(checkInterval);
+      console.log('Stopped checking after 5 minutes.');
+      resolve(false);
+    }, 60 * 1000);
+  });
+}
