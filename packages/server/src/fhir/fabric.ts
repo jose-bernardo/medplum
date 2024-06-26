@@ -5,10 +5,7 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { TextDecoder } from 'util';
 
-import { Request, Response } from 'express';
-
 import * as console from 'node:console';
-import { asyncWrap } from '../async';
 
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
 const chaincodeName = envOrDefault('CHAINCODE_NAME', 'ehrcc');
@@ -36,6 +33,7 @@ const utf8Decoder = new TextDecoder();
 
 export async function verifyAsset(id: string): Promise<JSON> {
 
+  /*
   await displayInputParameters();
 
   // The gRPC client connection should be shared by all Gateway connections to this endpoint.
@@ -72,6 +70,8 @@ export async function verifyAsset(id: string): Promise<JSON> {
     gateway.close();
     client.close();
   }
+
+   */
 }
 
 async function newGrpcConnection(): Promise<grpc.Client> {
