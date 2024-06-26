@@ -329,19 +329,15 @@ protectedRoutes.use(
 async function confirmRequest(request: FhirRequest): Promise<boolean> {
   return new Promise((resolve) => {
     const checkInterval = setInterval(() => {
+      console.log(requests)
       if (!(requests.includes(request))) {
         clearInterval(checkInterval);
         clearTimeout(checkInterval);
+        console.log('Confirmed!')
         resolve(true);
       } else {
         console.log('Still needing confirmation.')
       }
     }, 1000);
-
-    setTimeout((): void => {
-      clearInterval(checkInterval);
-      console.log('Stopped checking after 5 minutes.');
-      resolve(false);
-    }, 60 * 1000);
   });
 }
