@@ -33,7 +33,6 @@ const utf8Decoder = new TextDecoder();
 
 export async function verifyAsset(id: string): Promise<JSON> {
 
-  /*
   await displayInputParameters();
 
   // The gRPC client connection should be shared by all Gateway connections to this endpoint.
@@ -70,8 +69,6 @@ export async function verifyAsset(id: string): Promise<JSON> {
     gateway.close();
     client.close();
   }
-
-   */
 }
 
 async function newGrpcConnection(): Promise<grpc.Client> {
