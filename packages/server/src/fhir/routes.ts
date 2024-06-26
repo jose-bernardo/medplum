@@ -110,7 +110,7 @@ protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
 publicRoutes.post('/confirm', asyncWrap(async (req: Request, res: Response) => {
   const resource = await verifyAsset(req.body.id);
   console.log(resource);
-  requests.filter(item => item.body.id == req.body.id);
+  requests.filter(item => item.body.id == item.body.id);
   sendOutcome(res, allOk);
 }));
 
