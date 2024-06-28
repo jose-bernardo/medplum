@@ -2,10 +2,10 @@
   "name": "mobile",
   "version": "1.0.0",
   "main": "main.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "scripts": {
+    "dev": "ts-node-dev src/main.ts"
+  }
 }

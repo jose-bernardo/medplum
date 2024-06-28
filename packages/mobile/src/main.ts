@@ -12,7 +12,7 @@ const chaincodeName = envOrDefault('CHAINCODE_NAME', 'ehrcc');
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 
 // Path to security materials.
-const cryptoPath = envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..', 'organizations', 'peerOrganizations', 'org1.example.com'));
+const cryptoPath = envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..', '..', '..', 'organizations', 'peerOrganizations', 'org1.example.com'));
 
 // Path to provider private key directory.
 const keyDirectoryPath = envOrDefault('KEY_DIRECTORY_PATH', path.resolve(cryptoPath, 'users', 'User1@org1.example.com', 'msp', 'keystore'));
@@ -28,9 +28,6 @@ const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'localhost:7051');
 
 // Gateway peer SSL host name override.
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
-
-// RockFS path
-const mountDirectoryPath  = envOrDefault('MOUNT_DIRECTORY_PATH', path.resolve(__dirname, '..', 'RockFS', 'mount'));
 
 async function main(): Promise<void> {
 
@@ -117,14 +114,14 @@ async function loadResource(path: string): Promise<Resource> {
 
 async function createResource(contract: Contract, resource: Resource): Promise<void> {
   // retrieve id from backend server
-  const id = '';
+  const id = 'dasduasdas';
 
   try {
       const hash = await sha256(JSON.stringify(resource));
       const buffer = (await newIdentity()).credentials;
       const cert = buffer.toString();
       await createResourceHF(contract, id, cert, cert, hash);
-      await fs.writeFile(path.resolve(mountDirectoryPath, id + '.json'), JSON.stringify(resource));
+      //await fs.writeFile(path.resolve(mountDirectoryPath, id + '.json'), JSON.stringify(resource));
       console.log('Successfully created resource');
       return Promise.resolve();
   } catch (err) {
@@ -190,8 +187,6 @@ async function createResourceHF(contract: Contract, id: string, to: string, from
   await contract.submitTransaction(
     'CreateEHR',
     id,
-    to,
-    from,
     hash
   );
 
