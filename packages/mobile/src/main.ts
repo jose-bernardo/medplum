@@ -121,7 +121,7 @@ async function createResource(contract: Contract, resource: Resource): Promise<v
       const buffer = (await newIdentity()).credentials;
       const cert = buffer.toString();
       await createResourceHF(contract, id, cert, cert, hash);
-      const response = await fetch('10.2.0.15:8103/fhir/R4/confirm', {
+      const response = await fetch('http://10.15.0.17:8103/fhir/R4/confirm', {
         method: 'POST',
         body: JSON.stringify({id: id}),
         headers: {'Content-Type': 'application/json'},
