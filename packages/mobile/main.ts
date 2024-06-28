@@ -3,8 +3,8 @@ import { connect, Contract, Identity, Signer, signers } from '@hyperledger/fabri
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { TextDecoder } from 'util';
 
+import { Resource } from '@medplum/fhirtypes';
 import * as console from 'node:console';
 
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
@@ -12,7 +12,7 @@ const chaincodeName = envOrDefault('CHAINCODE_NAME', 'ehrcc');
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 
 // Path to security materials.
-const cryptoPath = envOrDefault('CRYPTO_PATH', path.resolve(__dirname, 'organizations', 'peerOrganizations', 'org1.example.com'));
+const cryptoPath = envOrDefault('CRYPTO_PATH', path.resolve(__dirname, '..', 'organizations', 'peerOrganizations', 'org1.example.com'));
 
 // Path to provider private key directory.
 const keyDirectoryPath = envOrDefault('KEY_DIRECTORY_PATH', path.resolve(cryptoPath, 'users', 'User1@org1.example.com', 'msp', 'keystore'));
@@ -29,9 +29,10 @@ const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'localhost:7051');
 // Gateway peer SSL host name override.
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
 
-const utf8Decoder = new TextDecoder();
+// RockFS path
+const mountDirectoryPath  = envOrDefault('MOUNT_DIRECTORY_PATH', path.resolve(__dirname, '..', 'RockFS', 'mount'));
 
-export async function assetInLedger(id: string): Promise<JSON> {
+async function main(): Promise<void> {
 
   await displayInputParameters();
 
@@ -64,12 +65,18 @@ export async function assetInLedger(id: string): Promise<JSON> {
     // Get the smart contract from the network.
     const contract = network.getContract(chaincodeName);
 
-    return await readResource(contract, id);
+    const patientResource: Resource = await loadResource('fhir-samples/patient.json');
+    await createResource(contract, patientResource);
   } finally {
     gateway.close();
     client.close();
   }
 }
+
+main().catch(error => {
+  console.error('******** FAILED to run the application:', error);
+  process.exitCode = 1;
+});
 
 async function newGrpcConnection(): Promise<grpc.Client> {
   const tlsRootCert = await fs.readFile(tlsCertPath);
@@ -97,13 +104,110 @@ async function newSigner(): Promise<Signer> {
   return signers.newPrivateKeySigner(privateKey);
 }
 
-async function readResource(contract: Contract, resourceId: string): Promise<JSON> {
+async function sha256(data: string): Promise<string> {
+  const sha256 = crypto.createHash('sha256');
+  sha256.update(data);
+  return sha256.digest('hex');
+}
+
+async function loadResource(path: string): Promise<Resource> {
+  const data= await fs.readFile(path);
+  return JSON.parse(data.toString('utf8'));
+}
+
+async function createResource(contract: Contract, resource: Resource): Promise<void> {
+  // retrieve id from backend server
+  const id = '';
+
   try {
-    return await readResourceByID(contract, resourceId);
+      const hash = await sha256(JSON.stringify(resource));
+      const buffer = (await newIdentity()).credentials;
+      const cert = buffer.toString();
+      await createResourceHF(contract, id, cert, cert, hash);
+      await fs.writeFile(path.resolve(mountDirectoryPath, id + '.json'), JSON.stringify(resource));
+      console.log('Successfully created resource');
+      return Promise.resolve();
   } catch (err) {
     console.log(err);
     return Promise.reject(err);
   }
+}
+
+/*
+async function readResource(contract: Contract, resourceType: ResourceType, resourceId: string): Promise<void> {
+  let ehrHeader: any;
+
+  try {
+    ehrHeader = await readResourceByID(contract, resourceId);
+  } catch (err) {
+    console.log(err);
+    return Promise.reject(err);
+  }
+
+  let resource: any;
+
+  resource = await medplum.readResource(resourceType, resourceId);
+  if (!resource) {
+    try {
+      resource = await fs.readFile(path.resolve(mountDirectoryPath, ehrHeader.id + '.json'));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const hash = await sha256(JSON.stringify(resource))
+  const isVerified = hash === ehrHeader.hash;
+  console.log(isVerified);
+  console.log(resource);
+}
+
+async function deleteResource(contract: Contract, resourceType: ResourceType, resourceId: string): Promise<void> {
+  try {
+    await deleteResourceHF(contract, resourceId);
+  } catch (err) {
+    console.log(err);
+    return Promise.reject(err);
+  }
+
+  try {
+    await fs.unlink(path.resolve(mountDirectoryPath, resourceId + '.json'))
+  } catch (err) {
+    console.log(err);
+    return Promise.reject(err);
+  }
+
+  return await medplum.deleteResource(resourceType, resourceId)
+}
+
+ */
+
+/**
+ * Create EHR transaction
+ */
+async function createResourceHF(contract: Contract, id: string, to: string, from: string, hash: string): Promise<void> {
+  console.log('\n--> Submit Transaction: CreateEHR');
+
+  await contract.submitTransaction(
+    'CreateEHR',
+    id,
+    to,
+    from,
+    hash
+  );
+
+  console.log('*** Transaction committed successfully');
+}
+
+/**
+ * Mark an EHR as deleted
+ */
+/*
+async function deleteResourceHF(contract: Contract, id: string): Promise<void> {
+  console.log('\n--> Submit Transaction: DeleteEHR');
+
+  await contract.submitTransaction('DeleteEHR', id);
+
+  console.log('*** Transaction commited successfully');
 }
 
 async function readResourceByID(contract: Contract, id: string): Promise<JSON> {
@@ -118,6 +222,8 @@ async function readResourceByID(contract: Contract, id: string): Promise<JSON> {
 
   return result;
 }
+
+ */
 
 /**
  * envOrDefault() will return the value of an environment variable, or a default value if the variable is undefined.

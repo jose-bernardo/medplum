@@ -1,0 +1,14 @@
+{
+  "resourceType": "AccessPolicy",
+  "name": "Practitioner Access Policy Template",
+  "id": "practitioner-access-policy-template",
+  "compartment": {
+    "reference": "%practitioner"
+  },
+  "resource": [
+    {
+      "resourceType": "Patient",
+      "criteria": "Patient?_compartment=Organization/1"
+    }
+  ]
+}

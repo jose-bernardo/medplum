@@ -31,6 +31,7 @@
     "@aws-sdk/cloudfront-signer": "3.598.0",
     "@aws-sdk/lib-storage": "3.598.0",
     "@aws-sdk/types": "3.598.0",
+    "@hyperledger/fabric-gateway": "^1.5.1",
     "@medplum/core": "3.1.8",
     "@medplum/definitions": "3.1.8",
     "@medplum/fhir-router": "3.1.8",

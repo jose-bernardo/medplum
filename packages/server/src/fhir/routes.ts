@@ -40,7 +40,7 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
-import { verifyAsset } from './fabric';
+import { assetInLedger  } from './fabric';
 
 let requests: FhirRequest[] = [];
 
@@ -108,9 +108,10 @@ protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
 
 // Confirm request
 publicRoutes.post('/confirm', asyncWrap(async (req: Request, res: Response) => {
-  const resource = await verifyAsset(req.body.id);
+  // maybe verify hash
+  const resource = await assetInLedger(req.body.id);
   console.log(resource);
-  requests.filter(item => item.body.id == item.body.id);
+  //requests.filter(item => item.body.id === req.body.id);
   sendOutcome(res, allOk);
 }));
 
@@ -300,10 +301,10 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    if (request.body.resourceType != 'Bundle'
-      && request.pathname != '/$graphql'
-      && request.method == 'POST'
-      && req.headers.authorization != undefined) {
+    if (request.body.resourceType !== 'Bundle'
+      && request.pathname !== '/$graphql'
+      && request.method === 'POST'
+      && req.headers.authorization !== undefined) {
       request.body.id = randomUUID();
 
       requests.push(request);
