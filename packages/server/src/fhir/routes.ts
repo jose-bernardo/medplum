@@ -106,13 +106,13 @@ protectedRoutes.get('/:resourceType/([$]|%24)csv', asyncWrap(csvHandler));
 protectedRoutes.post('/Agent/([$]|%24)push', agentPushHandler);
 protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
 
-protectedRoutes.post('/PendingRequests', asyncWrap(async () => {
+publicRoutes.post('/PendingRequests', asyncWrap(async () => {
   console.log(requests);
   return requests;
 }));
 
 // Confirm request
-protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async () => {
+publicRoutes.post('/ConfirmPendingRequest', asyncWrap(async () => {
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
   requests.pop();
