@@ -290,7 +290,7 @@ function initInternalFhirRouter(): FhirRouter {
   return router;
 }
 
-protectedRoutes.use(
+publicRoutes.use(
   '/fhir/R4/$graphql/*',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
@@ -317,7 +317,7 @@ protectedRoutes.use(
 )
 
 // Default route
-protectedRoutes.use(
+publicRoutes.use(
   '*',
   asyncWrap(async (req: Request) => {
     const request: FhirRequest = {
