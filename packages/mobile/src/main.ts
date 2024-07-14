@@ -1,10 +1,9 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
+import { connect, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-import { Resource } from '@medplum/fhirtypes';
 import * as console from 'node:console';
 
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
@@ -57,13 +56,12 @@ async function main(): Promise<void> {
 
   try {
     // Get a network instance representing the channel where the smart contract is deployed.
-    const network = gateway.getNetwork(channelName);
+    //const network = gateway.getNetwork(channelName);
 
     // Get the smart contract from the network.
-    const contract = network.getContract(chaincodeName);
+    //const contract = network.getContract(chaincodeName);
 
-    const patientResource: Resource = await loadResource('fhir-samples/patient.json');
-    await createResource(contract, patientResource);
+    await createResource();
   } finally {
     gateway.close();
     client.close();
@@ -101,27 +99,33 @@ async function newSigner(): Promise<Signer> {
   return signers.newPrivateKeySigner(privateKey);
 }
 
+/*
 async function sha256(data: string): Promise<string> {
   const sha256 = crypto.createHash('sha256');
   sha256.update(data);
   return sha256.digest('hex');
 }
+*/
 
+/*
 async function loadResource(path: string): Promise<Resource> {
   const data= await fs.readFile(path);
   return JSON.parse(data.toString('utf8'));
 }
+*/
 
-async function createResource(contract: Contract, resource: Resource): Promise<void> {
+async function createResource(): Promise<void> {
   // retrieve id from backend server
   const id = 'dasduasdas';
 
   try {
-      const hash = await sha256(JSON.stringify(resource));
-      const buffer = (await newIdentity()).credentials;
-      const cert = buffer.toString();
-      await createResourceHF(contract, id, cert, cert, hash);
-      const response = await fetch('http://10.15.0.17:8103/fhir/R4/confirm', {
+      //const hash = await sha256(JSON.stringify(resource));
+      //const buffer = (await newIdentity()).credentials;
+      //const cert = buffer.toString();
+      //await createResourceHF(contract, id, cert, cert, hash);
+      await fetch('http://10.15.0.17:8103/fhir/R4/PendingRequests');
+
+      const response = await fetch('http://10.15.0.17:8103/fhir/R4/ConfirmPendingRequest', {
         method: 'POST',
         body: JSON.stringify({id: id}),
         headers: {'Content-Type': 'application/json'},
@@ -186,6 +190,7 @@ async function deleteResource(contract: Contract, resourceType: ResourceType, re
 /**
  * Create EHR transaction
  */
+/*
 async function createResourceHF(contract: Contract, id: string, to: string, from: string, hash: string): Promise<void> {
   console.log('\n--> Submit Transaction: CreateEHR');
 
@@ -197,6 +202,7 @@ async function createResourceHF(contract: Contract, id: string, to: string, from
 
   console.log('*** Transaction committed successfully');
 }
+*/
 
 /**
  * Mark an EHR as deleted

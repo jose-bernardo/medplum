@@ -1,4 +1,4 @@
-import { allOk, badRequest, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
+import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -40,9 +40,9 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
-import { assetInLedger  } from './fabric';
+//import { assetInLedger  } from './fabric';
 
-let requests: FhirRequest[] = [];
+const requests: FhirRequest[] = [];
 
 export const fhirRouter = Router();
 
@@ -106,13 +106,17 @@ protectedRoutes.get('/:resourceType/([$]|%24)csv', asyncWrap(csvHandler));
 protectedRoutes.post('/Agent/([$]|%24)push', agentPushHandler);
 protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
 
+protectedRoutes.post('/PendingRequests', asyncWrap(async () => {
+  console.log(requests);
+  return requests;
+}));
+
 // Confirm request
-publicRoutes.post('/confirm', asyncWrap(async (req: Request, res: Response) => {
+protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async () => {
   // maybe verify hash
-  const resource = await assetInLedger(req.body.id);
-  console.log(resource);
-  //requests.filter(item => item.body.id === req.body.id);
-  sendOutcome(res, allOk);
+  //const resource = await assetInLedger(req.body.id);
+  requests.pop();
+  return requests;
 }));
 
 // Bot $execute operation
@@ -286,9 +290,8 @@ function initInternalFhirRouter(): FhirRouter {
   return router;
 }
 
-// Default route
 protectedRoutes.use(
-  '*',
+  '/fhir/R4/$graphql/*',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
 
@@ -301,20 +304,6 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    if (request.body.resourceType !== 'Bundle'
-      && request.pathname !== '/$graphql'
-      && request.method === 'POST'
-      && req.headers.authorization !== undefined) {
-      request.body.id = randomUUID();
-
-      requests.push(request);
-
-      const confirm = await confirmRequest(request);
-      if (!confirm) {
-        throw new OperationOutcomeError(badRequest('Failed to confirm request'));
-      }
-    }
-
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (result.length === 1) {
       if (!isOk(result[0])) {
@@ -325,20 +314,27 @@ protectedRoutes.use(
       await sendResponse(req, res, result[0], result[1]);
     }
   })
-);
+)
 
-async function confirmRequest(request: FhirRequest): Promise<boolean> {
-  return new Promise((resolve) => {
-    const checkInterval = setInterval(() => {
-      console.log(requests)
-      if (!(requests.includes(request))) {
-        clearInterval(checkInterval);
-        clearTimeout(checkInterval);
-        console.log('Confirmed!')
-        resolve(true);
-      } else {
-        console.log('Still needing confirmation.')
-      }
-    }, 1000);
-  });
-}
+// Default route
+protectedRoutes.use(
+  '*',
+  asyncWrap(async (req: Request) => {
+    const request: FhirRequest = {
+      method: req.method as HttpMethod,
+      pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
+      params: req.params,
+      query: req.query as Record<string, string>,
+      body: req.body,
+      headers: req.headers,
+    };
+
+    if (request.method === 'POST') {
+      request.body.id = randomUUID();
+    }
+
+    requests.push(request);
+
+    return 'Request pending confirmation';
+  })
+);
