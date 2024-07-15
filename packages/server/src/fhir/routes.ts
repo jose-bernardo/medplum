@@ -40,6 +40,7 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
+import { assetInLedger } from './fabric';
 //import { assetInLedger  } from './fabric';
 
 const requests: FhirRequest[] = [];
@@ -116,6 +117,7 @@ publicRoutes.post('/PendingRequests', asyncWrap(async (req: Request, resp: Respo
 publicRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, resp: Response) => {
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
+  //console.log(resource);
   console.log(req);
   const popped = requests.pop();
   resp.send(popped);
@@ -321,7 +323,7 @@ publicRoutes.use(
 // Default route
 publicRoutes.use(
   '*',
-  asyncWrap(async (req: Request) => {
+  asyncWrap(async (req: Request, resp: Response) => {
     const request: FhirRequest = {
       method: req.method as HttpMethod,
       pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
@@ -331,12 +333,14 @@ publicRoutes.use(
       headers: req.headers,
     };
 
+    console.log(request);
+
     if (request.method === 'POST') {
       request.body.id = randomUUID();
     }
 
     requests.push(request);
 
-    return 'Request pending confirmation';
+    return resp.send({status: 'pending confirmation'});
   })
 );

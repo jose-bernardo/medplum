@@ -32,9 +32,6 @@ const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
 const utf8Decoder = new TextDecoder();
 
 export async function assetInLedger(id: string): Promise<JSON> {
-
-  await displayInputParameters();
-
   // The gRPC client connection should be shared by all Gateway connections to this endpoint.
   const client = await newGrpcConnection();
 
@@ -124,19 +121,4 @@ async function readResourceByID(contract: Contract, id: string): Promise<JSON> {
  */
 function envOrDefault(key: string, defaultValue: string): string {
   return process.env[key] || defaultValue;
-}
-
-/**
- * displayInputParameters() will print the global scope parameters used by the main driver routine.
- */
-async function displayInputParameters(): Promise<void> {
-  console.log(`channelName:       ${channelName}`);
-  console.log(`chaincodeName:     ${chaincodeName}`);
-  console.log(`mspId:             ${mspId}`);
-  console.log(`cryptoPath:        ${cryptoPath}`);
-  console.log(`keyDirectoryPath:  ${keyDirectoryPath}`);
-  console.log(`certDirectoryPath: ${certDirectoryPath}`);
-  console.log(`tlsCertPath:       ${tlsCertPath}`);
-  console.log(`peerEndpoint:      ${peerEndpoint}`);
-  console.log(`peerHostAlias:     ${peerHostAlias}`);
 }
