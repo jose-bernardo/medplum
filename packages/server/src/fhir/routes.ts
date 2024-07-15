@@ -40,7 +40,6 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
-import { assetInLedger } from './fabric';
 //import { assetInLedger  } from './fabric';
 
 const requests: FhirRequest[] = [];
@@ -295,7 +294,7 @@ function initInternalFhirRouter(): FhirRouter {
 }
 
 publicRoutes.use(
-  '/fhir/R4/$graphql/*',
+  '/fhir/R4/$graphql',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
 
