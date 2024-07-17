@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
+import { allOk, ContentType, isOk, OperationOutcomeError, satisfiedAccessPolicy } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -107,7 +107,6 @@ protectedRoutes.post('/Agent/([$]|%24)push', agentPushHandler);
 protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
 
 publicRoutes.post('/PendingRequests', asyncWrap(async (req: Request, resp: Response) => {
-  console.log(req);
   console.log(requests);
   resp.send({requests: requests});
 }));
@@ -293,8 +292,8 @@ function initInternalFhirRouter(): FhirRouter {
   return router;
 }
 
-publicRoutes.use(
-  '/fhir/R4/$graphql',
+publicRoutes.post(
+  '/([$]|%24)graphql',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
 
@@ -319,8 +318,8 @@ publicRoutes.use(
   })
 )
 
-// Default route
-publicRoutes.use(
+// Default write route
+protectedRoutes.post(
   '*',
   asyncWrap(async (req: Request, resp: Response) => {
     const request: FhirRequest = {
@@ -332,14 +331,37 @@ publicRoutes.use(
       headers: req.headers,
     };
 
-    console.log(request);
-
-    if (request.method === 'POST') {
-      request.body.id = randomUUID();
-    }
+    request.body.id = randomUUID();
 
     requests.push(request);
 
     return resp.send({status: 'pending confirmation'});
   })
 );
+
+// Default read route
+protectedRoutes.get(
+  '*',
+  asyncWrap(async (req: Request, res: Response) => {
+    const ctx = getAuthenticatedContext();
+
+    const request: FhirRequest = {
+      method: req.method as HttpMethod,
+      pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
+      params: req.params,
+      query: req.query as Record<string, string>,
+      body: req.body,
+      headers: req.headers,
+    };
+
+    const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    if (result.length === 1) {
+      if (!isOk(result[0])) {
+        throw new OperationOutcomeError(result[0]);
+      }
+      sendOutcome(res, result[0]);
+    } else {
+      await sendResponse(req, res, result[0], result[1]);
+    }
+  })
+)
