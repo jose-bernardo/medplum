@@ -311,7 +311,8 @@ protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Res
 }));
 
 // Route for confirming a pending request
-publicRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, res: Response) => {
+protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, res: Response) => {
+  const ctx = getAuthenticatedContext();
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
   //console.log(resource);
