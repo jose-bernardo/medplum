@@ -222,6 +222,8 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
   }
 
   async createResource<T extends Resource>(resource: T): Promise<T> {
+    console.log(resource);
+
     if (!(resource.id)) {
       resource.id = randomUUID();
     }
