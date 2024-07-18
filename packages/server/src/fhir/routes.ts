@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError, satisfiedAccessPolicy } from '@medplum/core';
+import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -105,21 +105,6 @@ protectedRoutes.get('/:resourceType/([$]|%24)csv', asyncWrap(csvHandler));
 // Agent $push operation (cannot use FhirRouter due to HL7 and DICOM output)
 protectedRoutes.post('/Agent/([$]|%24)push', agentPushHandler);
 protectedRoutes.post('/Agent/:id/([$]|%24)push', agentPushHandler);
-
-publicRoutes.post('/PendingRequests', asyncWrap(async (req: Request, resp: Response) => {
-  console.log(requests);
-  resp.send({requests: requests});
-}));
-
-// Confirm request
-publicRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, resp: Response) => {
-  // maybe verify hash
-  //const resource = await assetInLedger(req.body.id);
-  //console.log(resource);
-  console.log(req);
-  const popped = requests.pop();
-  resp.send(popped);
-}));
 
 // Bot $execute operation
 // Allow extra path content after the "$execute" to support external callers who append path info
@@ -292,7 +277,8 @@ function initInternalFhirRouter(): FhirRouter {
   return router;
 }
 
-publicRoutes.post(
+// Route for graphql queries
+protectedRoutes.post(
   '/([$]|%24)graphql',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
@@ -318,10 +304,36 @@ publicRoutes.post(
   })
 )
 
-// Default write route
+// Route for retrieving pending requests
+protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Response) => {
+  console.log(requests);
+  res.send({requests: requests});
+}));
+
+// Route for confirming a pending request
+publicRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, res: Response) => {
+  // maybe verify hash
+  //const resource = await assetInLedger(req.body.id);
+  //console.log(resource);
+  const popped = requests.pop();
+
+  if (popped !== undefined) {
+    const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
+    if (result.length === 1) {
+      if (!isOk(result[0])) {
+        throw new OperationOutcomeError(result[0]);
+      }
+      sendOutcome(res, result[0]);
+    } else {
+      await sendResponse(req, res, result[0], result[1]);
+    }
+  }
+}));
+
+// Default database write operations route
 protectedRoutes.post(
   '*',
-  asyncWrap(async (req: Request, resp: Response) => {
+  asyncWrap(async (req: Request, res: Response) => {
     const request: FhirRequest = {
       method: req.method as HttpMethod,
       pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
@@ -335,11 +347,11 @@ protectedRoutes.post(
 
     requests.push(request);
 
-    return resp.send({status: 'pending confirmation'});
+    return res.send({status: 'pending confirmation'});
   })
 );
 
-// Default read route
+// Default database read operations route
 protectedRoutes.get(
   '*',
   asyncWrap(async (req: Request, res: Response) => {
