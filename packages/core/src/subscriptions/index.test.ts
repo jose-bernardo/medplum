@@ -634,8 +634,6 @@ describe('SubscriptionManager', () => {
       const originalWarn = console.warn;
       console.warn = jest.fn();
 
-      // @ts-expect-error We don't use manager
-      const _manager = new SubscriptionManager(medplum, 'wss://example.com/ws/subscriptions-r4');
       await wsServer.connected;
 
       const timestamp = new Date().toISOString();

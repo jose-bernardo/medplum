@@ -66,9 +66,6 @@ describe('MedplumClient -- Subscriptions', () => {
     originalWarn = console.warn;
     console.warn = warnMockFn = jest.fn();
     jest.useFakeTimers();
-
-    // @ts-expect-error Need this to be here even if we are not using it so that WS reqs don't fail
-    const _wsServer = new WS('wss://api.medplum.com/ws/subscriptions-r4', { jsonProtocol: true });
   });
 
   afterAll(async () => {
@@ -151,8 +148,6 @@ describe('MedplumClient -- More Subscription Tests', () => {
   });
 
   test('should be able to use `baseUrl` w/ a slash path', async () => {
-    // @ts-expect-error This is needed to receive server side WS requests
-    const _wsServer = new WS('https://example.com/foo/bar/ws/subscriptions-r4', { jsonProtocol: true });
     const medplum = new MedplumClient({
       baseUrl: 'https://example.com/foo/bar/',
       fetch: createMockFetchWithStatus('https://example.com/foo/bar/'),

@@ -3895,6 +3895,7 @@ export class MedplumClient extends EventTarget {
     }
   }
 
+  /*
   async recordReadOnLedger(resourceId: string): Promise<string> {
     try {
       console.log('\n--> Submit Transaction: ReadEHRByID, function returns EHR attributes');
@@ -3941,6 +3942,7 @@ export class MedplumClient extends EventTarget {
   async confirmPendingRequest(): Promise<any> {
     return this.post('/fhir/R4/ConfirmPendingRequest', {});
   }
+  */
 }
 
 /**
