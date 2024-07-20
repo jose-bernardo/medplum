@@ -87,6 +87,11 @@ import {
   sleep,
   sortStringArray,
 } from './utils';
+import console from 'node:console';
+
+import { getContract } from './fabric';
+
+import { TextDecoder } from 'util';
 
 export const MEDPLUM_VERSION: string = import.meta.env.MEDPLUM_VERSION ?? '';
 export const MEDPLUM_CLI_CLIENT_ID = 'medplum-cli';
@@ -103,6 +108,8 @@ const system: Device = {
   id: 'system',
   deviceName: [{ type: 'model-name', name: 'System' }],
 };
+
+const utf8Decoder = new TextDecoder();
 
 /**
  * The MedplumClientOptions interface defines configuration options for MedplumClient.
@@ -3859,6 +3866,80 @@ export class MedplumClient extends EventTarget {
    */
   getMasterSubscriptionEmitter(): SubscriptionEmitter {
     return this.getSubscriptionManager().getMasterEmitter();
+  }
+
+  async recordUpdateOnLedger(resourceId: string): Promise<string> {
+    try {
+      const hash = 'samealways'; //await sha256(JSON.stringify(resource));
+      //const buffer = (await newIdentity()).credentials;
+      //const cert = buffer.toString();
+
+      console.log('\n--> Submit Transaction: CreateEHR');
+
+      const contract = await getContract();
+      const resultBytes = await contract.submitTransaction(
+        'CreateEHR',
+        resourceId,
+        hash
+      );
+      const resultJson = utf8Decoder.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+
+      console.log('*** Result:', result);
+      console.log('*** Transaction committed successfully');
+
+      return JSON.stringify(result);
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
+    }
+  }
+
+  async recordReadOnLedger(resourceId: string): Promise<string> {
+    try {
+      console.log('\n--> Submit Transaction: ReadEHRByID, function returns EHR attributes');
+
+      const contract = await getContract();
+      const resultBytes = await contract.submitTransaction('ReadEHR', resourceId);
+      const resultJson = utf8Decoder.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+
+      console.log('*** Result:', result);
+      console.log('*** Transaction committed successfully');
+
+      return JSON.stringify(result);
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
+    }
+  }
+
+  async recordDeleteOnLedger(resourceId: string): Promise<string> {
+    try {
+      console.log('\n--> Submit Transaction: DeleteEHR');
+
+      const contract = await getContract();
+      const resultBytes = await contract.submitTransaction('DeleteEHR', resourceId);
+
+      const resultJson = utf8Decoder.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+
+      console.log('*** Result:', result);
+      console.log('*** Transaction commited successfully');
+
+      return JSON.stringify(result);
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
+    }
+  }
+
+  async getPendingRequests(): Promise<any> {
+    return this.post('/fhir/R4/PendingRequests', {});
+  }
+
+  async confirmPendingRequest(): Promise<any> {
+    return this.post('/fhir/R4/ConfirmPendingRequest', {});
   }
 }
 
