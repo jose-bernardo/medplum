@@ -3860,6 +3860,14 @@ export class MedplumClient extends EventTarget {
   getMasterSubscriptionEmitter(): SubscriptionEmitter {
     return this.getSubscriptionManager().getMasterEmitter();
   }
+
+  async getPendingRequests(): Promise<void> {
+    await this.post(this.fhirUrl('PendingRequests'), {});
+  }
+
+  async confirmPendingRequest(): Promise<void> {
+    await this.post(this.fhirUrl('ConfirmPendingRequest'),{});
+  }
 }
 
 /**

@@ -40,9 +40,10 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
-//import { assetInLedger  } from './fabric';
+import { FabricGateway } from '@medplum/fabric';
 
 const requests: FhirRequest[] = [];
+const enableFabric = true;
 
 export const fhirRouter = Router();
 
@@ -306,15 +307,25 @@ protectedRoutes.post(
 
 // Route for retrieving pending requests
 protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Response) => {
+  if (!enableFabric) {
+    res.send('fabric is not enabled');
+  }
+
   console.log(requests);
   res.send({requests: requests});
 }));
 
 // Route for confirming a pending request
 protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, res: Response) => {
+  if (!enableFabric) {
+    res.send('fabric is not enabled');
+  }
+
   const ctx = getAuthenticatedContext();
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
+  const gateway = new FabricGateway();
+  console.log(gateway);
   //console.log(resource);
   const popped = requests.pop();
 
@@ -346,9 +357,12 @@ protectedRoutes.post(
 
     request.body.id = randomUUID();
 
-    requests.push(request);
-
-    return res.send({status: 'pending confirmation'});
+    //if (!enableFabric) {
+      // should do everything as before
+    //} else {
+      requests.push(request);
+      return res.send({resourceId: request.body.id, status: 'pending confirmation' });
+    //}
   })
 );
 
@@ -368,6 +382,8 @@ protectedRoutes.get(
     };
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    console.log(result);
+    // if forbidden don't even add to pending requests
     if (result.length === 1) {
       if (!isOk(result[0])) {
         throw new OperationOutcomeError(result[0]);
