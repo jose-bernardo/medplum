@@ -333,6 +333,7 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
+  await gateway.start();
   const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
   if (actionLog !== undefined) {
     res.send('transaction failed to verified');
@@ -397,6 +398,7 @@ protectedRoutes.get(
     console.log(result);
 
     const gateway = new FabricGateway();
+    await gateway.start();
     if (result[1] !== undefined) {
       const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), req.body.resourceId);
       if (isVerified) {
