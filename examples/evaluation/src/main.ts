@@ -1,33 +1,32 @@
 import { FabricGateway } from '@medplum/fabric';
-import { ClientStorage, MedplumClient, sleep } from '@medplum/core';
-import { Resource } from '@medplum/fhirtypes';
+import { MedplumClient } from '@medplum/core';
+import { Resource, ResourceType } from '@medplum/fhirtypes';
 
 const medplumClient: MedplumClient = new MedplumClient({
   baseUrl: 'http://10.15.0.17:8103',
-  storage: new ClientStorage()
 });
 
 const gateway = new FabricGateway();
 
 async function main(): Promise<void> {
-  const response = await medplumClient.startLogin({ email: 'admin@example.com', password: 'medplum_admin' })
-  console.log(response);
 
   const resource = {};
 
+  return;
   const resourceId = await createResource(resource as Resource);
 
   await readResource('Patient', resourceId);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/*
 async function evaluate(nRequests: number, interval: number, iterations: number): Promise<void> {
   while (iterations) {
-    for (let i = 0; i < iterations; i++) { /* empty */ }
+    for (let i = 0; i < iterations; i++) {  }
     await sleep(interval);
     iterations--;
   }
 }
+*/
 
 async function createResource(resource: Resource): Promise<string> {
   const res1= await medplumClient.createResource(resource);
@@ -43,11 +42,11 @@ async function createResource(resource: Resource): Promise<string> {
   return "";
 }
 
-async function readResource(resourceType: string, resourceId: string) {
+async function readResource(resourceType: ResourceType, resourceId: string): Promise<void> {
   const res1 = await medplumClient.readResource(resourceType, resourceId);
   console.log(res1);
 
-  const res2 = await gateway.recordReadOnLedger(resourceId);
+  const res2 = await gateway.recordUpdateOnLedger(resourceId);
   console.log(res2);
 }
 

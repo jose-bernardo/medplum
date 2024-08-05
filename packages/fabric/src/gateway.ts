@@ -3,6 +3,7 @@ import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperled
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { createHash } from 'node:crypto';
 
 // TODO change this so its dynamic
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
@@ -90,6 +91,35 @@ export class FabricGateway {
     }
   }
 
+  async verifyHash(resource: string, resourceId: string): Promise<boolean> {
+    if (!this.contract) {
+      throw new Error('contract not defined');
+    }
+
+    try {
+      console.log('\n--> Submit Transaction: ReadEHRNoLog');
+
+      const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
+      const resultJson = utf8Decoder.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+
+      console.log('*** Result:', result);
+      console.log('*** Transaction committed successfully');
+
+      const sha256 = (resource: string): string => {
+        return createHash('sha256')
+          .update(resource)
+          .digest('hex');
+      }
+
+      return result.hash === sha256(resource);
+
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
+    }
+  }
+
   async recordUpdateOnLedger(resourceId: string): Promise<string> {
     if (!this.contract) {
       throw new Error('contract not defined');
@@ -145,6 +175,28 @@ export class FabricGateway {
     console.log('*** Transaction committed successfully');
 
     return result;
+  }
+
+  async readActionLogEntry(logEntryId: string): Promise<JSON> {
+    if (!this.contract) {
+      throw new Error('contract not defined');
+    }
+
+    console.log('\n--> Submit Transaction: ReadActionLogEntry');
+
+    const resultBytes = await this.contract.submitTransaction('ReadActionLogEntry', logEntryId);
+
+    const resultJson = utf8Decoder.decode(resultBytes);
+    const result = JSON.parse(resultJson);
+    console.log('*** Result:', result);
+    console.log('*** Transaction committed successfully');
+
+    return result;
+  }
+
+  async readActionLogEntryByEhrId(ehrId: string): Promise<void> {
+    /* empty */
+    console.log(ehrId);
   }
 
   async close(): Promise<void> {

@@ -275,6 +275,14 @@ function initInternalFhirRouter(): FhirRouter {
     }
   });
 
+  // TODO check log of certain resource
+  router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
+    const { id } = req.params as { id: string };
+    const gateway = new FabricGateway();
+    await gateway.readActionLogEntryByEhrId(id);
+    return [allOk];
+  })
+
   return router;
 }
 
@@ -325,7 +333,11 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
   // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
-  console.log(gateway);
+  const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
+  if (actionLog !== undefined) {
+    res.send('transaction failed to verified');
+  }
+
   //console.log(resource);
   const popped = requests.pop();
 
@@ -381,8 +393,19 @@ protectedRoutes.get(
       headers: req.headers,
     };
 
-    const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     console.log(result);
+
+    const gateway = new FabricGateway();
+    if (result[1] !== undefined) {
+      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), req.body.resourceId);
+      if (isVerified) {
+        console.log('very bad corruption');
+        //rockFs.rebuildResource(request.body.id);
+        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+      }
+    }
+
     // if forbidden don't even add to pending requests
     if (result.length === 1) {
       if (!isOk(result[0])) {
