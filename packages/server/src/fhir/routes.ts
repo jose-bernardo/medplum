@@ -279,6 +279,8 @@ function initInternalFhirRouter(): FhirRouter {
   router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
     const gateway = new FabricGateway();
+    await gateway.start();
+    await gateway.setContract();
     await gateway.readActionLogEntryByEhrId(id);
     return [allOk];
   })
@@ -334,6 +336,7 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
   await gateway.start();
+  await gateway.setContract();
   const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
   if (actionLog !== undefined) {
     res.send('transaction failed to verified');
@@ -399,6 +402,8 @@ protectedRoutes.get(
 
     const gateway = new FabricGateway();
     await gateway.start();
+    await gateway.setContract();
+
     if (result[1] !== undefined) {
       const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), req.body.resourceId);
       if (isVerified) {
