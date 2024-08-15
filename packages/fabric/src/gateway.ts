@@ -61,7 +61,7 @@ export class FabricGateway {
     });
   }
 
-  async start(): Promise<void> {
+  async connect(): Promise<void> {
     this.client = await this.newGrpcConnection();
 
     this.gateway = connect({
@@ -82,13 +82,9 @@ export class FabricGateway {
         return { deadline: Date.now() + 60000 }; // 1 minute
       },
     });
-  }
 
-  async setContract(): Promise<void> {
-    if (this.gateway) {
-      const network = this.gateway.getNetwork(channelName);
-      this.contract = network.getContract(chaincodeName);
-    }
+    const network = this.gateway.getNetwork(channelName);
+    this.contract = network.getContract(chaincodeName);
   }
 
   async verifyHash(resource: string, resourceId: string): Promise<boolean> {
@@ -99,7 +95,7 @@ export class FabricGateway {
     try {
       console.log('\n--> Submit Transaction: ReadEHRNoLog');
 
-      const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
+      const resultBytes = await this.contract.submitTransaction('ReadEHRNoLog', resourceId);
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
 
@@ -167,7 +163,7 @@ export class FabricGateway {
 
     console.log('\n--> Submit Transaction: ReadEHRByID, function returns EHR attributes');
 
-    const resultBytes = await this.contract.submitTransaction('ReadEHR', resourceId);
+    const resultBytes = await this.contract.submitTransaction('ReadEntry', resourceId);
 
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
@@ -182,9 +178,9 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Submit Transaction: ReadActionLogEntry');
+    console.log('\n--> Submit Transaction: ReadEntry');
 
-    const resultBytes = await this.contract.submitTransaction('ReadActionLogEntry', logEntryId);
+    const resultBytes = await this.contract.submitTransaction('ReadEntryNoLog', logEntryId);
 
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);

@@ -279,8 +279,7 @@ function initInternalFhirRouter(): FhirRouter {
   router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
     const gateway = new FabricGateway();
-    await gateway.start();
-    await gateway.setContract();
+    await gateway.connect();
     await gateway.readActionLogEntryByEhrId(id);
     return [allOk];
   })
@@ -332,11 +331,9 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
   }
 
   const ctx = getAuthenticatedContext();
-  // maybe verify hash
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
-  await gateway.start();
-  await gateway.setContract();
+  await gateway.connect();
   const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
   if (actionLog !== undefined) {
     res.send('transaction failed to verified');
@@ -401,11 +398,12 @@ protectedRoutes.get(
     console.log(result);
 
     const gateway = new FabricGateway();
-    await gateway.start();
-    await gateway.setContract();
+    await gateway.connect();
 
     if (result[1] !== undefined) {
-      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), req.body.resourceId);
+      const resourceId: string = req.body.resourceId;
+      console.log(req.body)
+      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), resourceId);
       if (isVerified) {
         console.log('very bad corruption');
         //rockFs.rebuildResource(request.body.id);
