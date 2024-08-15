@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 
 // TODO change this so its dynamic
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
-const chaincodeName = envOrDefault('CHAINCODE_NAME', 'ehrcc');
+const chaincodeName = envOrDefault('CHAINCODE_NAME', 'basic');
 const mspId = envOrDefault('MSP_ID', 'Org1MSP');
 
 // Path to security materials.
@@ -23,7 +23,7 @@ const certDirectoryPath = envOrDefault('CERT_DIRECTORY_PATH', path.resolve(crypt
 const tlsCertPath = envOrDefault('TLS_CERT_PATH', path.resolve(cryptoPath, 'peers', 'peer0.org1.example.com', 'tls', 'ca.crt'));
 
 // Gateway peer endpoint.
-const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'localhost:7051');
+const peerEndpoint = envOrDefault('PEER_ENDPOINT', '10.100.0.12:7051');
 
 // Gateway peer SSL host name override.
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
@@ -178,9 +178,9 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Submit Transaction: ReadEntry');
+    console.log('\n--> Submit Transaction: ReadActionLogEntry');
 
-    const resultBytes = await this.contract.submitTransaction('ReadEntryNoLog', logEntryId);
+    const resultBytes = await this.contract.submitTransaction('ReadActionLogEntry', logEntryId);
 
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
