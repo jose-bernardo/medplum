@@ -334,12 +334,10 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
   await gateway.connect();
-  console.log(req.body.logEntryId);
-
-  //const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
-  //if (actionLog !== undefined) {
-  //  res.send('transaction failed to verified');
-  //}
+  const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
+  if (actionLog !== undefined) {
+    res.send('request not recorded on the ledger');
+  }
 
   //console.log(resource);
   const popped = requests.pop();

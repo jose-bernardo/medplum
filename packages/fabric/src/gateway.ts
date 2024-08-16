@@ -183,16 +183,21 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Submit Transaction: ReadActionLogEntry');
+    try {
+      console.log('\n--> Submit Transaction: ReadActionLogEntry');
 
-    const resultBytes = await this.contract.submitTransaction('ReadActionLogEntry', logEntryId);
+      const resultBytes = await this.contract.submitTransaction('ReadActionLogEntry', logEntryId);
 
-    const resultJson = utf8Decoder.decode(resultBytes);
-    const result = JSON.parse(resultJson);
-    console.log('*** Result:', result);
-    console.log('*** Transaction committed successfully');
+      const resultJson = utf8Decoder.decode(resultBytes);
+      const result = JSON.parse(resultJson);
+      console.log('*** Result:', result);
+      console.log('*** Transaction committed successfully');
 
-    return result;
+      return result;
+    } catch (err) {
+      console.log(err);
+      return Promise.reject(err);
+    }
   }
 
   async readActionLogEntryByEhrId(ehrId: string): Promise<void> {
