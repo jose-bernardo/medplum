@@ -116,7 +116,7 @@ export class FabricGateway {
     }
   }
 
-  async recordUpdateOnLedger(resourceId: string): Promise<string> {
+  async recordUpdateOnLedger(resourceId: string): Promise<JSON> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
@@ -137,26 +137,31 @@ export class FabricGateway {
       console.log('*** Result:', result);
       console.log('*** Transaction committed successfully');
 
-      return JSON.stringify(result);
+      return result;
     } catch (err) {
       console.log(err);
       return Promise.reject(err);
     }
   }
 
-  async recordDeleteOnLedger(resourceId: string): Promise<void> {
+  async recordDeleteOnLedger(resourceId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
     console.log('\n--> Submit Transaction: DeleteEHR');
 
-    await this.contract.submitTransaction('DeleteEHR', resourceId);
+    const resultBytes = await this.contract.submitTransaction('DeleteEHR', resourceId);
 
-    console.log('*** Transaction commited successfully');
+    const resultJson = utf8Decoder.decode(resultBytes);
+    const result = JSON.parse(resultJson);
+    console.log('*** Result:', result);
+    console.log('*** Transaction committed successfully');
+
+    return result;
   }
 
-  async recordReadOnLedger(resourceId: string): Promise<JSON> {
+  async recordReadOnLedger(resourceId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
@@ -173,7 +178,7 @@ export class FabricGateway {
     return result;
   }
 
-  async readActionLogEntry(logEntryId: string): Promise<JSON> {
+  async readActionLogEntry(logEntryId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
