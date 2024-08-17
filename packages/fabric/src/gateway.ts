@@ -95,7 +95,7 @@ export class FabricGateway {
     try {
       console.log('\n--> Submit Transaction: ReadEHRNoLog');
 
-      const resultBytes = await this.contract.submitTransaction('ReadEHRNoLog', resourceId);
+      const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
 
