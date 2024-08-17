@@ -375,16 +375,7 @@ protectedRoutes.post(
       // should do everything as before
     //} else {
     requests.push(request);
-    const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
-    if (result.length === 1) {
-      if (!isOk(result[0])) {
-        throw new OperationOutcomeError(result[0]);
-      }
-      sendOutcome(res, result[0]);
-    } else {
-      await sendResponse(req, res, result[0], result[1]);
-    }
-    //res.send({resourceId: request.body.id, status: 'pending confirmation' });
+    res.send({resourceId: request.body.id, status: 'pending confirmation' });
     //}
   })
 );
