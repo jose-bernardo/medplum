@@ -330,13 +330,15 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
     res.send('fabric is not enabled');
   }
 
-  console.log("received confirm requestttttttttt");
-
   const ctx = getAuthenticatedContext();
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
   await gateway.connect();
+  console.log("received confirm requestttttttttt");
+
   const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
+  console.log("received confirm requestttttttttt");
+
   if (actionLog !== undefined) {
     res.send('request not recorded on the ledger');
   }
