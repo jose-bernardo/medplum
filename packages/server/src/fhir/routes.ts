@@ -330,6 +330,8 @@ protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, re
     res.send('fabric is not enabled');
   }
 
+  console.log("received confirm requestttttttttt");
+
   const ctx = getAuthenticatedContext();
   //const resource = await assetInLedger(req.body.id);
   const gateway = new FabricGateway();
