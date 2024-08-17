@@ -325,41 +325,43 @@ protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Res
 }));
 
 // Route for confirming a pending request
-protectedRoutes.post('/ConfirmPendingRequest', asyncWrap(async (req: Request, res: Response) => {
-  if (!enableFabric) {
-    res.send('fabric is not enabled');
-  }
-
-  const ctx = getAuthenticatedContext();
-  //const resource = await assetInLedger(req.body.id);
-  const gateway = new FabricGateway();
-  await gateway.connect();
-  const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
-
-  if (actionLog !== undefined) {
-    res.send('request not recorded on the ledger');
-  }
-
-  //console.log(resource);
-  const popped = requests.pop();
-
-  if (popped !== undefined) {
-    const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
-    if (result.length === 1) {
-      if (!isOk(result[0])) {
-        throw new OperationOutcomeError(result[0]);
-      }
-      sendOutcome(res, result[0]);
-    } else {
-      await sendResponse(req, res, result[0], result[1]);
+protectedRoutes.post('/ConfirmPendingRequest',
+  asyncWrap(async (req: Request, res: Response) => {
+    if (!enableFabric) {
+      res.send('fabric is not enabled');
     }
-  }
-}));
+
+    const ctx = getAuthenticatedContext();
+    const gateway = new FabricGateway();
+    await gateway.connect();
+    const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
+
+    if (actionLog !== undefined) {
+      res.send('request not recorded on the ledger');
+    }
+
+    const popped = requests.pop();
+
+    if (popped !== undefined) {
+      const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
+      if (result.length === 1) {
+        if (!isOk(result[0])) {
+          throw new OperationOutcomeError(result[0]);
+        }
+        sendOutcome(res, result[0]);
+      } else {
+        await sendResponse(req, res, result[0], result[1]);
+      }
+    }
+  })
+);
 
 // Default database write operations route
 protectedRoutes.post(
   '*',
   asyncWrap(async (req: Request, res: Response) => {
+    req.body.id = randomUUID();
+
     const request: FhirRequest = {
       method: req.method as HttpMethod,
       pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
@@ -369,13 +371,20 @@ protectedRoutes.post(
       headers: req.headers,
     };
 
-    request.body.id = randomUUID();
-
     //if (!enableFabric) {
       // should do everything as before
     //} else {
-      requests.push(request);
-      return res.send({resourceId: request.body.id, status: 'pending confirmation' });
+    requests.push(request);
+    const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
+    if (result.length === 1) {
+      if (!isOk(result[0])) {
+        throw new OperationOutcomeError(result[0]);
+      }
+      sendOutcome(res, result[0]);
+    } else {
+      await sendResponse(req, res, result[0], result[1]);
+    }
+    //res.send({resourceId: request.body.id, status: 'pending confirmation' });
     //}
   })
 );
