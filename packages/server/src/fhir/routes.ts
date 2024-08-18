@@ -406,7 +406,7 @@ protectedRoutes.get(
       const resourceId: string = req.body.resourceId;
       console.log(req.body)
       const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), resourceId);
-      if (isVerified) {
+      if (!isVerified) {
         console.log('very bad corruption');
         //rockFs.rebuildResource(request.body.id);
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);

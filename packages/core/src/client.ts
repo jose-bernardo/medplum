@@ -3865,8 +3865,8 @@ export class MedplumClient extends EventTarget {
     await this.post(this.fhirUrl('PendingRequests'), {});
   }
 
-  async confirmPendingRequest(logEntryId: string): Promise<void> {
-    await this.post(this.fhirUrl('ConfirmPendingRequest'),{logEntryId: logEntryId});
+  async confirmPendingRequest(logEntryId: string): Promise<any> {
+    return this.post(this.fhirUrl('ConfirmPendingRequest'),{logEntryId: logEntryId});
   }
 }
 
