@@ -397,6 +397,7 @@ protectedRoutes.get(
     };
 
     let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    console.log(result);
     if (result[1]?.id !== undefined) {
       const gateway = new FabricGateway();
       await gateway.connect();
