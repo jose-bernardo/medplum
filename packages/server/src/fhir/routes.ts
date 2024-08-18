@@ -336,8 +336,9 @@ protectedRoutes.post('/ConfirmPendingRequest',
     await gateway.connect();
     const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
 
-    if (actionLog !== undefined) {
+    if (actionLog === undefined) {
       res.send('request not recorded on the ledger');
+      return;
     }
 
     const popped = requests.pop();
