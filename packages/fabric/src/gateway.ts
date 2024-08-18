@@ -93,14 +93,13 @@ export class FabricGateway {
     }
 
     try {
-      console.log('\n--> Submit Transaction: ReadEHRNoLog');
-
+      console.log('\n--> Evaluate Transaction: ReadEHRNoLog');
+      console.log(resourceId);
       const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
 
       console.log('*** Result:', result);
-      console.log('*** Transaction committed successfully');
 
       const sha256 = (resource: string): string => {
         return createHash('sha256')
@@ -108,7 +107,7 @@ export class FabricGateway {
           .digest('hex');
       }
 
-      return result.hash === sha256(resource);
+      return result.EHR.Hash === sha256(resource);
 
     } catch (err) {
       console.log(err);
@@ -184,14 +183,13 @@ export class FabricGateway {
     }
 
     try {
-      console.log('\n--> Submit Transaction: ReadActionLogEntry');
+      console.log('\n--> Evaluate Transaction: ReadActionLogEntry');
 
       const resultBytes = await this.contract.evaluateTransaction('ReadActionLogEntry', logEntryId);
 
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
       console.log('*** Result:', result);
-      console.log('*** Transaction committed successfully');
 
       return result;
     } catch (err) {
