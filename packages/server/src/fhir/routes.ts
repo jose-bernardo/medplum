@@ -280,8 +280,8 @@ function initInternalFhirRouter(): FhirRouter {
     const { id } = req.params as { id: string };
     const gateway = new FabricGateway();
     await gateway.connect();
-    await gateway.readActionLogEntryByEhrId(id);
-    return [allOk];
+    const actionLog = await gateway.readActionLogEntry(id);
+    return [allOk, actionLog];
   })
 
   return router;
@@ -397,14 +397,10 @@ protectedRoutes.get(
     };
 
     let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    console.log(result);
-
-    const gateway = new FabricGateway();
-    await gateway.connect();
-
     if (result[1] !== undefined) {
       const resourceId: string = req.body.resourceId;
-      console.log(req.body)
+      const gateway = new FabricGateway();
+      await gateway.connect();
       const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), resourceId);
       if (!isVerified) {
         console.log('very bad corruption');
