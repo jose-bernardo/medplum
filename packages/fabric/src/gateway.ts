@@ -162,9 +162,9 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Submit Transaction: ReadEHRByID, function returns EHR attributes');
+    console.log('\n--> Submit Transaction: ReadEHR');
 
-    const resultBytes = await this.contract.submitTransaction('ReadEntry', resourceId);
+    const resultBytes = await this.contract.submitTransaction('ReadEHR', resourceId);
 
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
