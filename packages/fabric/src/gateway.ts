@@ -94,7 +94,6 @@ export class FabricGateway {
 
     try {
       console.log('\n--> Evaluate Transaction: ReadEHRNoLog');
-      console.log(resourceId);
       const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
@@ -115,14 +114,12 @@ export class FabricGateway {
     }
   }
 
-  async recordUpdateOnLedger(resourceId: string): Promise<JSON> {
+  async recordUpdateOnLedger(hash: string, resourceId: string): Promise<JSON> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
     try {
-      const hash = 'samealways'; //await sha256(JSON.stringify(resource));
-
       console.log('\n--> Submit Transaction: CreateEHR');
 
       const resultBytes = await this.contract.submitTransaction(
