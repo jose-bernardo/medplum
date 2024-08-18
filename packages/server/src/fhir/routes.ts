@@ -397,11 +397,10 @@ protectedRoutes.get(
     };
 
     let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    if (result[1] !== undefined) {
-      const resourceId: string = req.body.resourceId;
+    if (result[1]?.id !== undefined) {
       const gateway = new FabricGateway();
       await gateway.connect();
-      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), resourceId);
+      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), result[1].id);
       if (!isVerified) {
         console.log('very bad corruption');
         //rockFs.rebuildResource(request.body.id);
