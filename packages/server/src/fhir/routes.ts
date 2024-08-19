@@ -41,9 +41,16 @@ import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
 import { FabricGateway } from '@medplum/fabric';
+import { createHash } from 'node:crypto';
 
 const requests: FhirRequest[] = [];
 const enableFabric = true;
+
+const sha256 = (resource: string): string => {
+  return createHash('sha256')
+    .update(resource)
+    .digest('hex');
+}
 
 export const fhirRouter = Router();
 
@@ -397,12 +404,13 @@ protectedRoutes.get(
     };
 
     let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    console.log(result);
     if (result[1]?.id !== undefined) {
       const gateway = new FabricGateway();
       await gateway.connect();
-      const isVerified = await gateway.verifyHash(JSON.stringify(result[1]), result[1].id);
-      if (!isVerified) {
+      const resource = await gateway.readEhrNoLog(result[1].id);
+
+      delete result[1].meta;
+      if (resource.EHR.Hash !== sha256(JSON.stringify(result[1]))) {
         console.log('very bad corruption');
         //rockFs.rebuildResource(request.body.id);
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);

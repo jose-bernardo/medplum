@@ -3,7 +3,6 @@ import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperled
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { createHash } from 'node:crypto';
 
 // TODO change this so its dynamic
 const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
@@ -87,7 +86,7 @@ export class FabricGateway {
     this.contract = network.getContract(chaincodeName);
   }
 
-  async verifyHash(resource: string, resourceId: string): Promise<boolean> {
+  async readEhrNoLog(resourceId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
@@ -100,14 +99,7 @@ export class FabricGateway {
 
       console.log('*** Result:', result);
 
-      const sha256 = (resource: string): string => {
-        return createHash('sha256')
-          .update(resource)
-          .digest('hex');
-      }
-
-      return result.EHR.Hash === sha256(resource);
-
+      return result;
     } catch (err) {
       console.log(err);
       return Promise.reject(err);
