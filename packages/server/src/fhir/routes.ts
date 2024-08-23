@@ -424,6 +424,7 @@ protectedRoutes.get(
       }
       sendOutcome(res, result[0]);
     } else {
+      requests.push(request);
       await sendResponse(req, res, result[0], result[1]);
     }
   })
