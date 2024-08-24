@@ -74,5 +74,14 @@ medplum-server.tar.gz
 # Agent artifacts
 packages/agent/*agent-*-linux*
 
+# Organizations
+packages/organizations
+fabric-scripts/organizations
+fabric-scripts/medsky.tar.gz
+fabric-scripts/channel-artifacts
+fabric-scripts/packagedChaincode
+
+chaincode/vendor
+
 # JetBrains stuff
 .idea/
