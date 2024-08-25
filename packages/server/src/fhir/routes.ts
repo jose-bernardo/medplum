@@ -1,4 +1,4 @@
-import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
+import { allOk, ContentType, isOk, badRequest, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { Resource, ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
@@ -39,12 +39,8 @@ import { valueSetValidateOperation } from './operations/valuesetvalidatecode';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
-import { randomUUID } from 'crypto';
 import { createHash } from 'node:crypto';
 import { getFabricGateway } from '../fabricgateway';
-import { globalLogger } from '../logger';
-
-const requests: FhirRequest[] = [];
 
 const sha256 = (resource: string): string => {
   return createHash('sha256')
@@ -291,9 +287,9 @@ function initInternalFhirRouter(): FhirRouter {
   return router;
 }
 
-// Route for graphql queries
-protectedRoutes.post(
-  '/([$]|%24)graphql',
+// Default route
+protectedRoutes.use(
+  '*',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
 
@@ -305,108 +301,44 @@ protectedRoutes.post(
       body: req.body,
       headers: req.headers,
     };
+
+    console.log(request);
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    if (result.length === 1) {
-      if (!isOk(result[0])) {
-        throw new OperationOutcomeError(result[0]);
+    if (!request.pathname.includes('$graphql') && result[1] !== undefined) {
+      const actionLog = await getFabricGateway().readActionLogEntry(req.params.logEntryId) as Resource;
+      if (actionLog === undefined) {
+        throw new OperationOutcomeError(badRequest('request not logged in the network'));
       }
-      sendOutcome(res, result[0]);
-    } else {
-      await sendResponse(req, res, result[0], result[1]);
-    }
-  })
-)
 
-// Route for retrieving pending requests
-protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Response) => {
-  console.log(requests);
-  res.send({requests: requests});
-}));
-
-// Route for confirming a pending request
-protectedRoutes.post('/ConfirmPendingRequest',
-  asyncWrap(async (req: Request, res: Response) => {
-    const ctx = getAuthenticatedContext();
-    const actionLog = await getFabricGateway().readActionLogEntry(req.body.logEntryId) as Resource;
-
-    if (actionLog === undefined) {
-      res.send('request not recorded on the ledger');
-      return;
-    }
-
-    const popped = requests.pop();
-
-    if (popped !== undefined) {
-      const result = await getInternalFhirRouter().handleRequest(popped, ctx.repo);
-      if (result.length === 1) {
-        if (!isOk(result[0])) {
-          throw new OperationOutcomeError(result[0]);
+      const hash = sha256(JSON.stringify(result[1]));
+      console.log(result);
+      console.log(hash);
+      // Read request
+      if (request.method === 'GET') {
+        console.log('Here I should verify if data is corrupted')
+        /*
+        delete result[1].meta;
+        if (resource.EHR.Hash !== sha256(JSON.stringify(result[1]))) {
+          globalLogger.warn("Resource in FHIR database is corrupted.")
+          //rockFs.rebuildResource(request.body.id);
+          result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
         }
-        sendOutcome(res, result[0]);
-      } else {
-        await sendResponse(req, res, result[0], result[1]);
+        */
       }
-    }
-  })
-);
-
-// Default database write operations route
-protectedRoutes.post(
-  '*',
-  asyncWrap(async (req: Request, res: Response) => {
-    req.body.id = randomUUID();
-
-    const request: FhirRequest = {
-      method: req.method as HttpMethod,
-      pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
-      params: req.params,
-      query: req.query as Record<string, string>,
-      body: req.body,
-      headers: req.headers,
-    };
-
-    requests.push(request);
-    res.send({resourceId: request.body.id, status: 'pending confirmation' });
-  })
-);
-
-// Default database read operations route
-protectedRoutes.get(
-  '*',
-  asyncWrap(async (req: Request, res: Response) => {
-    const ctx = getAuthenticatedContext();
-
-    const request: FhirRequest = {
-      method: req.method as HttpMethod,
-      pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
-      params: req.params,
-      query: req.query as Record<string, string>,
-      body: req.body,
-      headers: req.headers,
-    };
-
-    let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    if (result[1]?.id !== undefined) {
-      const resource = await getFabricGateway().readEhrNoLog(result[1].id);
-
-      delete result[1].meta;
-      if (resource.EHR.Hash !== sha256(JSON.stringify(result[1]))) {
-        globalLogger.warn("Resource in FHIR database is corrupted.")
-        //rockFs.rebuildResource(request.body.id);
-        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+      // Write request
+      else {
+        console.log('Here I should just verify if there is an entry on the ledger with the correct hash')
       }
     }
 
-    // if forbidden don't even add to pending requests
     if (result.length === 1) {
       if (!isOk(result[0])) {
         throw new OperationOutcomeError(result[0]);
       }
       sendOutcome(res, result[0]);
     } else {
-      requests.push(request);
       await sendResponse(req, res, result[0], result[1]);
     }
   })
-)
+);

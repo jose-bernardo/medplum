@@ -223,6 +223,7 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
 
   async createResource<T extends Resource>(resource: T): Promise<T> {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    //TODO !!! this is just a hack to not get an error when starting the system for the first time
     if (!uuidRegex.test(resource.id as string)) {
       resource.id = randomUUID();
     }
@@ -646,8 +647,17 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
   }
 
   private async handleMaybeCacheOnly(result: Resource, create: boolean): Promise<void> {
-    if (!this.isCacheOnly(result)) {
+    if (!this.isCacheOnly(result) && result.id !== undefined) {
       await this.writeToDatabase(result, create);
+
+      /*
+      // also write to RockFS
+      const readable = new Readable();
+      readable.push(Buffer.from(JSON.stringify(result), 'utf-8'));
+      readable.push(null);
+      await getBinaryStorage().writeFile(result.id, 'json', readable)
+      */
+
     } else if (result.resourceType === 'Subscription' && result.channel?.type === 'websocket') {
       const redis = getRedis();
       const project = result?.meta?.project;

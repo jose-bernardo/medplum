@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
+import { connect, Contract, Gateway, Identity, Proposal, Signer, signers, Status } from '@hyperledger/fabric-gateway';
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 
@@ -18,6 +18,7 @@ export interface FabricOptions {
 
 export class FabricGateway {
   private client?: grpc.Client;
+  private signer?: Signer;
   private gateway?: Gateway;
   private contract?: Contract;
   private options: FabricOptions;
@@ -62,11 +63,12 @@ export class FabricGateway {
 
   async connect(): Promise<void> {
     this.client = await this.newGrpcConnection();
+    this.signer = await this.newSigner();
 
     this.gateway = connect({
       client: this.client,
       identity: await this.newIdentity(),
-      signer: await this.newSigner(),
+      signer: this.signer,
       // Default timeouts for different gRPC calls
       evaluateOptions: () => {
         return { deadline: Date.now() + 5000 }; // 5 seconds
@@ -86,23 +88,22 @@ export class FabricGateway {
     this.contract = network.getContract(this.options.chaincodeName);
   }
 
-  async readEhrNoLog(resourceId: string): Promise<any> {
+  async evaluateAsset(id: string): Promise<JSON | undefined> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
     try {
-      console.log('\n--> Evaluate Transaction: ReadEHRNoLog');
-      const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', resourceId);
+      console.log('\n--> Evaluate Transaction: EvaluateAsset');
+      const resultBytes = await this.contract.evaluateTransaction('ReadEHRNoLog', id);
       const resultJson = utf8Decoder.decode(resultBytes);
       const result = JSON.parse(resultJson);
-
       console.log('*** Result:', result);
 
       return result;
     } catch (err) {
       console.log(err);
-      return Promise.reject(err);
+      return undefined;
     }
   }
 
@@ -111,59 +112,13 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    try {
-      console.log('\n--> Submit Transaction: CreateEHR');
-
-      const resultBytes = await this.contract.submitTransaction(
-        'CreateEHR',
-        resourceId,
-        hash
-      );
-      const resultJson = utf8Decoder.decode(resultBytes);
-      const result = JSON.parse(resultJson);
-
-      console.log('*** Result:', result);
-      console.log('*** Transaction committed successfully');
-
-      return result;
-    } catch (err) {
-      console.log(err);
-      return Promise.reject(err);
-    }
-  }
-
-  async recordDeleteOnLedger(resourceId: string): Promise<any> {
-    if (!this.contract) {
-      throw new Error('contract not defined');
-    }
-
-    console.log('\n--> Submit Transaction: DeleteEHR');
-
-    const resultBytes = await this.contract.submitTransaction('DeleteEHR', resourceId);
-
+    const resultBytes = await this.contract.submitTransaction('CreateEHR', resourceId, hash);
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
     console.log('*** Result:', result);
-    console.log('*** Transaction committed successfully');
 
     return result;
-  }
-
-  async recordReadOnLedger(resourceId: string): Promise<any> {
-    if (!this.contract) {
-      throw new Error('contract not defined');
-    }
-
-    console.log('\n--> Submit Transaction: ReadEHR');
-
-    const resultBytes = await this.contract.submitTransaction('ReadEHR', resourceId);
-
-    const resultJson = utf8Decoder.decode(resultBytes);
-    const result = JSON.parse(resultJson);
-    console.log('*** Result:', result);
-    console.log('*** Transaction committed successfully');
-
-    return result;
+    //return this.contract.newProposal('CreateEHR', { arguments: [resourceId, hash] })
   }
 
   async readActionLogEntry(logEntryId: string): Promise<any> {
@@ -171,25 +126,14 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    try {
-      console.log('\n--> Evaluate Transaction: ReadActionLogEntry');
+    console.log('\n--> Evaluate Transaction: ReadActionLogEntry');
 
-      const resultBytes = await this.contract.evaluateTransaction('ReadActionLogEntry', logEntryId);
+    const resultBytes = await this.contract.evaluateTransaction('ReadActionLogEntry', logEntryId);
+    const resultJson = utf8Decoder.decode(resultBytes);
+    const result = JSON.parse(resultJson);
+    console.log('*** Result:', result);
 
-      const resultJson = utf8Decoder.decode(resultBytes);
-      const result = JSON.parse(resultJson);
-      console.log('*** Result:', result);
-
-      return result;
-    } catch (err) {
-      console.log(err);
-      return Promise.reject(err);
-    }
-  }
-
-  async readActionLogEntryByEhrId(ehrId: string): Promise<void> {
-    /* empty */
-    console.log(ehrId);
+    return result;
   }
 
   async close(): Promise<void> {
@@ -197,5 +141,44 @@ export class FabricGateway {
       this.client.close();
       this.gateway.close();
     }
+  }
+
+  async submitTransaction(unsignedProposal: Proposal): Promise<Status> {
+    if (this.signer === undefined) {
+      throw Error('signer not defined');
+    }
+
+    if (this.gateway === undefined) {
+      throw Error('gateway not defined');
+    }
+
+    const proposalBytes = unsignedProposal.getBytes();
+    const proposalDigest = unsignedProposal.getDigest();
+    const proposalSignature = await this.signer(proposalDigest);
+
+    const signedProposal = this.gateway.newSignedProposal(proposalBytes, proposalSignature);
+
+    // Done by server
+    const unsignedTransaction = await signedProposal.endorse();
+    const transactionBytes = unsignedTransaction.getBytes();
+    const transactionDigest = unsignedTransaction.getDigest();
+    const transactionSignature = await this.signer(transactionDigest)
+    const signedTransaction = this.gateway.newSignedTransaction(transactionBytes, transactionSignature);
+
+    // Done by server
+    const unsignedCommit = await signedTransaction.submit();
+    const commitBytes = unsignedCommit.getBytes();
+    const commitDigest = unsignedCommit.getDigest();
+    const commitSignature = await this.signer(commitDigest)
+    const signedCommit = this.gateway.newSignedCommit(commitBytes, commitSignature);
+
+    const result = signedTransaction.getResult();
+    console.log('*** Result:', result);
+
+    // Done by server
+    const status = await signedCommit.getStatus();
+    console.log('[Status]:', status);
+
+    return status;
   }
 }
