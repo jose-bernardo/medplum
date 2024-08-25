@@ -1,6 +1,6 @@
 import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
-import { ResourceType } from '@medplum/fhirtypes';
+import { Resource, ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
 import { asyncWrap } from '../async';
 import { getConfig } from '../config';
@@ -40,11 +40,11 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { randomUUID } from 'crypto';
-import { FabricGateway } from '@medplum/fabric';
 import { createHash } from 'node:crypto';
+import { getFabricGateway } from '../fabricgateway';
+import { globalLogger } from '../logger';
 
 const requests: FhirRequest[] = [];
-const enableFabric = true;
 
 const sha256 = (resource: string): string => {
   return createHash('sha256')
@@ -282,12 +282,9 @@ function initInternalFhirRouter(): FhirRouter {
     }
   });
 
-  // TODO check log of certain resource
   router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
-    const gateway = new FabricGateway();
-    await gateway.connect();
-    const actionLog = await gateway.readActionLogEntry(id);
+    const actionLog = await getFabricGateway().readActionLogEntry(id) as Resource;
     return [allOk, actionLog];
   })
 
@@ -323,10 +320,6 @@ protectedRoutes.post(
 
 // Route for retrieving pending requests
 protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Response) => {
-  if (!enableFabric) {
-    res.send('fabric is not enabled');
-  }
-
   console.log(requests);
   res.send({requests: requests});
 }));
@@ -334,14 +327,8 @@ protectedRoutes.post('/PendingRequests', asyncWrap(async (req: Request, res: Res
 // Route for confirming a pending request
 protectedRoutes.post('/ConfirmPendingRequest',
   asyncWrap(async (req: Request, res: Response) => {
-    if (!enableFabric) {
-      res.send('fabric is not enabled');
-    }
-
     const ctx = getAuthenticatedContext();
-    const gateway = new FabricGateway();
-    await gateway.connect();
-    const actionLog = gateway.readActionLogEntry(req.body.logEntryId);
+    const actionLog = await getFabricGateway().readActionLogEntry(req.body.logEntryId) as Resource;
 
     if (actionLog === undefined) {
       res.send('request not recorded on the ledger');
@@ -379,12 +366,8 @@ protectedRoutes.post(
       headers: req.headers,
     };
 
-    //if (!enableFabric) {
-      // should do everything as before
-    //} else {
     requests.push(request);
     res.send({resourceId: request.body.id, status: 'pending confirmation' });
-    //}
   })
 );
 
@@ -405,13 +388,11 @@ protectedRoutes.get(
 
     let result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (result[1]?.id !== undefined) {
-      const gateway = new FabricGateway();
-      await gateway.connect();
-      const resource = await gateway.readEhrNoLog(result[1].id);
+      const resource = await getFabricGateway().readEhrNoLog(result[1].id);
 
       delete result[1].meta;
       if (resource.EHR.Hash !== sha256(JSON.stringify(result[1]))) {
-        console.log('very bad corruption');
+        globalLogger.warn("Resource in FHIR database is corrupted.")
         //rockFs.rebuildResource(request.body.id);
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
       }

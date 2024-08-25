@@ -9,12 +9,14 @@ export MAX_RETRY="5"
 export PATH=${PWD}/bin:$PATH
 export FABRIC_CFG_PATH=${PWD}/configtx
 export DOCKER_SOCK="${DOCKER_HOST:-/var/run/docker.sock}"
+export FABRIC_LOGGING_SPEC=grpc=warning
 
 export ORDERER_CA=${PWD}/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
 
 export CORE_PEER_TLS_ENABLED=true
 export PEER0_ORG1_CA=${PWD}/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 export PEER0_ORG2_CA=${PWD}/organizations/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+export PEER0_ORG3_CA=${PWD}/organizations/peerOrganizations/org3.example.com/tlsca/tlsca.org3.example.com-cert.pem
 
 export CC_NAME="medsky"
 export CC_SRC_PATH=${PWD}/../chaincode
@@ -62,6 +64,15 @@ networkDown() {
 
 networkUp() {
 
+  if ! docker stats --no-stream; then
+    open /Applications/Docker.app
+    while (! docker stats --no-stream ); do
+      # Docker takes a few seconds to initialize
+      echo "Waiting for Docker to launch..."
+      sleep 1
+    done
+  fi
+
   infoln "Bringing up network"
 
   createOrgs
@@ -105,6 +116,7 @@ joinChannel() {
   setGlobals $ORG
 	local rc=1
 	local COUNTER=1
+  infoln "Joining org$ORG peer to the channel"
 	## Sometimes Join takes time, hence retry
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
     sleep $DELAY
@@ -131,6 +143,7 @@ function vendorCC() {
 packageCC() {
   infoln "Packaging chaincode"
   set -x
+  vendorCC
   peer lifecycle chaincode package ${CC_NAME}.tar.gz --path ${CC_SRC_PATH} --lang golang --label ${CC_NAME}_${CC_VERSION} >&log.txt
   res=$?
   { set +x; } 2>/dev/null
@@ -171,7 +184,7 @@ function approveForMyOrg() {
   ORG=$1
   setGlobals $ORG
   set -x
-  peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --package-id ${PACKAGE_ID} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
+  peer lifecycle chaincode approveformyorg -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} --version ${CC_VERSION} --package-id ${PACKAGE_ID} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
@@ -233,7 +246,7 @@ function commitChaincodeDefinition() {
   verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
 
   set -x
-  peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} "${PEER_CONN_PARMS[@]}" --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
+  peer lifecycle chaincode commit -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "$ORDERER_CA" --channelID $CHANNEL_NAME --name ${CC_NAME} "${PEER_CONN_PARMS[@]}" --version ${CC_VERSION} --sequence ${CC_SEQUENCE} ${INIT_REQUIRED} ${CC_END_POLICY} ${CC_COLL_CONFIG} >&log.txt
   res=$?
   { set +x; } 2>/dev/null
   cat log.txt
@@ -268,27 +281,38 @@ function queryCommitted() {
 }
 
 deployCC() {
-  infoln "Installing chaincode on peer0.org1..."
+  infoln "Install chaincode on peer0.org1..."
   installChaincode 1
   infoln "Install chaincode on peer0.org2..."
   installChaincode 2
+  infoln "Install chaincode on peer0.org3..."
+  installChaincode 3
 
   queryInstalled 1
 
   approveForMyOrg 1
 
-  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false"
-  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false"
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
 
   approveForMyOrg 2
 
-  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true"
-  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true"
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
 
-  commitChaincodeDefinition 1 2
+  approveForMyOrg 3
+
+ checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+ checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+ checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+
+  commitChaincodeDefinition 1 2 3
 
   queryCommitted 1
   queryCommitted 2
+  queryCommitted 3
 
   rm log.txt
 
@@ -301,13 +325,10 @@ networkUp
 createChannelGenesisBlock
 createChannel
 
-echo "Joining org1 peer to the channel"
 joinChannel 1
-echo "Joining org2 peer to the channel"
 joinChannel 2
+joinChannel 3
 
 packageCC
-
-sleep 5
 
 deployCC
