@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/**/*.ts"],
   "compilerOptions": {
     "module": "es2020",
     "types": ["jest", "vite/client"],
@@ -9,4 +8,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
+  "include": ["src/**/*.ts"]
 }

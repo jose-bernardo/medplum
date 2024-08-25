@@ -35,5 +35,5 @@ esbuild
     format: 'esm',
     outfile: './dist/esm/index.mjs',
   })
-  .then(() => writeFileSync('./dist/esm/~package.json', '{"type": "module"}'))
+  .then(() => writeFileSync('./dist/esm/package.json', '{"type": "module"}'))
   .catch(console.error);
