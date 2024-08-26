@@ -303,6 +303,9 @@ protectedRoutes.use(
     };
 
     console.log(request);
+    if (request.body.id === undefined) {
+      throw new OperationOutcomeError(badRequest('resource without id'));
+    }
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (!request.pathname.includes('$graphql') && result[1] !== undefined) {
