@@ -58,6 +58,8 @@ createOrgs() {
   cryptogen generate --config=cryptogen/crypto-config.yaml --output="organizations"
   { set +x; } 2>/dev/null
 
+  cp -r organizations ../packages/server/organizations
+
   successln 'Successfully created all organization identities'
 }
 
