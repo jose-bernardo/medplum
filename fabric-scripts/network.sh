@@ -32,6 +32,10 @@ function installPrereq() {
   successln "Prerequisites are now met"
 }
 
+function eraseVolumes() {
+  docker-compose -f compose/compose.yaml -f compose/docker/docker-compose.yaml down --volumes --remove-orphans
+}
+
 checkPrereq() {
   FILE="./install-fabric.sh"
   if [ ! -f $FILE ]; then
@@ -58,8 +62,9 @@ createOrgs() {
 }
 
 networkDown() {
+  clearContainers
+  eraseVolumes
   rm -rf ${PWD}/organizations ${PWD}/channel-artifacts
-  docker-compose -f compose/compose.yaml -f compose/docker/docker-compose.yaml down --volumes --remove-orphans
 }
 
 networkUp() {
@@ -127,6 +132,66 @@ joinChannel() {
 		let rc=$res
 		COUNTER=$(expr $COUNTER + 1)
 	done
+}
+
+createConfigUpdate() {
+  CHANNEL=$1
+  ORIGINAL=$2
+  MODIFIED=$3
+  OUTPUT=$4
+
+  set -x
+  configtxlator proto_encode --input "${ORIGINAL}" --type common.Config --output channel-artifacts/original_config.pb
+  configtxlator proto_encode --input "${MODIFIED}" --type common.Config --output channel-artifacts/modified_config.pb
+  configtxlator compute_update --channel_id "${CHANNEL}" --original channel-artifacts/original_config.pb --updated channel-artifacts/modified_config.pb --output channel-artifacts/config_update.pb
+  configtxlator proto_decode --input channel-artifacts/config_update.pb --type common.ConfigUpdate --output channel-artifacts/config_update.json
+  echo '{"payload":{"header":{"channel_header":{"channel_id":"'$CHANNEL'", "type":2}},"data":{"config_update":'$(cat channel-artifacts/config_update.json)'}}}' | jq . > channel-artifacts/config_update_in_envelope.json
+  configtxlator proto_encode --input channel-artifacts/config_update_in_envelope.json --type common.Envelope --output "${OUTPUT}"
+  { set +x; } 2>/dev/null
+}
+
+createAnchorPeerUpdate() {
+  infoln "Fetching channel config for channel $CHANNEL_NAME"
+  fetchChannelConfig $ORG $CHANNEL_NAME channel-artifacts/${CORE_PEER_LOCALMSPID}config.json
+
+  infoln "Generating anchor peer update transaction for Org${ORG} on channel $CHANNEL_NAME"
+
+  if [ $ORG -eq 1 ]; then
+    HOST="peer0.org1.example.com"
+    PORT=8101
+  elif [ $ORG -eq 2 ]; then
+    HOST="peer0.org2.example.com"
+    PORT=8201
+  elif [ $ORG -eq 3 ]; then
+    HOST="peer0.org3.example.com"
+    PORT=8301
+  else
+    errorln "Org${ORG} unknown"
+  fi
+
+  set -x
+  jq '.channel_group.groups.Application.groups.'${CORE_PEER_LOCALMSPID}'.values += {"AnchorPeers":{"mod_policy": "Admins","value":{"anchor_peers": [{"host": "'$HOST'","port": '$PORT'}]},"version": "0"}}' ${TEST_NETWORK_HOME}/channel-artifacts/${CORE_PEER_LOCALMSPID}config.json > ${TEST_NETWORK_HOME}/channel-artifacts/${CORE_PEER_LOCALMSPID}modified_config.json
+  res=$?
+  { set +x; } 2>/dev/null
+  verifyResult $res "Channel configuration update for anchor peer failed, make sure you have jq installed"
+
+  createConfigUpdate ${CHANNEL_NAME} channel-artifacts/${CORE_PEER_LOCALMSPID}config.json channel-artifacts/${CORE_PEER_LOCALMSPID}modified_config.json channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx
+}
+
+updateAnchorPeer() {
+  peer channel update -o localhost:7101 --ordererTLSHostnameOverride orderer.example.com -c $CHANNEL_NAME -f channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile "$ORDERER_CA" >&log.txt
+  res=$?
+  cat log.txt
+  verifyResult $res "Anchor peer update failed"
+  successln "Anchor peer set for org '$CORE_PEER_LOCALMSPID' on channel '$CHANNEL_NAME'"
+}
+
+setAnchorPeer() {
+  ORG=$1
+  infoln "Setting anchor peer for org${ORG}..."
+  setGlobals $ORG
+  createAnchorPeerUpdate
+  updateAnchorPeer
 }
 
 function vendorCC() {
@@ -256,6 +321,9 @@ function commitChaincodeDefinition() {
 
 function queryCommitted() {
   ORG=$1
+  if $2; then
+    MAX_RETRY=$2
+  fi
   setGlobals $ORG
   EXPECTED_RESULT="Version: ${CC_VERSION}, Sequence: ${CC_SEQUENCE}, Endorsement Plugin: escc, Validation Plugin: vscc"
   infoln "Querying chaincode definition on peer0.org${ORG} on channel '$CHANNEL_NAME'..."
@@ -329,6 +397,9 @@ joinChannel 1
 joinChannel 2
 joinChannel 3
 
-packageCC
+setAnchorPeer 1
+setAnchorPeer 2
+setAnchorPeer 3
 
+packageCC
 deployCC

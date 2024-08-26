@@ -6,7 +6,7 @@
 version: '3.7'
 services:
   postgres:
-    image: postgres:12
+    image: postgres:12-bullseye
     restart: always
     environment:
       - POSTGRES_USER=medplum
@@ -18,7 +18,7 @@ services:
     ports:
       - '5432:5432'
   redis:
-    image: redis:7
+    image: redis:7.0.10
     restart: always
     command: redis-server --requirepass medplum
     ports:
