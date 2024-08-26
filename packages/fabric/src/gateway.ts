@@ -27,7 +27,7 @@ export class FabricGateway {
     this.options = options;
   }
 
-  private displayFabricParameters(): string {
+  displayFabricParameters(): string {
     return `channelName:       ${this.options.channelName}\n` +
     `chaincodeName:     ${this.options.chaincodeName}\n` +
     `mspId:             ${this.options.mspId}\n` +
