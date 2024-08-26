@@ -37,6 +37,7 @@ packages/mock/dist/
 packages/react/dist/
 packages/react-hooks/dist/
 packages/server/dist/
+packages/fabric/dist
 
 # Storybook output
 storybook-static/

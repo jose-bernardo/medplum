@@ -16,6 +16,8 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateway = new FabricGateway(config);
 
+  globalLogger.info(gateway.displayFabricParameters());
+
   gateway.connect().then().catch((err: Error) => {
     globalLogger.error("Fabric network connection error: " + err);
   })

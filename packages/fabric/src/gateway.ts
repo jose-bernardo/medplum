@@ -25,18 +25,17 @@ export class FabricGateway {
 
   constructor(options: FabricOptions) {
     this.options = options;
-    this.displayFabricParameters();
   }
 
-  displayFabricParameters(): void {
-    console.log(`channelName:       ${this.options.channelName}`);
-    console.log(`chaincodeName:     ${this.options.chaincodeName}`);
-    console.log(`mspId:             ${this.options.mspId}`);
-    console.log(`keyPath:           ${this.options.keyPath}`);
-    console.log(`certPath:          ${this.options.certPath}`);
-    console.log(`tlsCertPath:       ${this.options.tlsCertPath}`);
-    console.log(`peerEndpoint:      ${this.options.peerEndpoint}`);
-    console.log(`peerHostAlias:     ${this.options.peerHostAlias}`);
+  private displayFabricParameters(): string {
+    return `channelName:       ${this.options.channelName}\n` +
+    `chaincodeName:     ${this.options.chaincodeName}\n` +
+    `mspId:             ${this.options.mspId}\n` +
+    `keyPath:           ${this.options.keyPath}\n` +
+    `certPath:          ${this.options.certPath}\n` +
+    `tlsCertPath:       ${this.options.tlsCertPath}\n` +
+    `peerEndpoint:      ${this.options.peerEndpoint}\n` +
+    `peerHostAlias:     ${this.options.peerHostAlias}`;
   }
 
   private async newSigner(): Promise<Signer> {
