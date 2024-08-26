@@ -302,7 +302,6 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    console.log(request);
     if (request.body.id === undefined) {
       throw new OperationOutcomeError(badRequest('resource without id'));
     }
@@ -315,8 +314,6 @@ protectedRoutes.use(
       }
 
       const hash = sha256(JSON.stringify(result[1]));
-      console.log(result);
-      console.log(hash);
       // Read request
       if (request.method === 'GET') {
         console.log('Here I should verify if data is corrupted')

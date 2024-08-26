@@ -76,16 +76,16 @@ medplum-server.tar.gz
 packages/agent/*agent-*-linux*
 
 # Organizations
-fabric-scripts/organizations
-fabric-scripts/medsky.tar.gz
-fabric-scripts/channel-artifacts
-fabric-scripts/packagedChaincode
+fabric-network/organizations
+fabric-network/medsky.tar.gz
+fabric-network/channel-artifacts
+fabric-network/packagedChaincode
 
 packages/server/organizations
 
 # Binaries
-fabric-scripts/bin
-fabric-scripts/builders
+fabric-network/bin
+fabric-network/builders
 
 # Chaincode vendor
 chaincode/vendor
