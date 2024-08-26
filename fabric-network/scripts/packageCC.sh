@@ -1,5 +1,4 @@
 function compileCC() {
-  mkdir -p packagedChaincode
   infoln "Compiling TypeScript code into JavaScript..."
   pushd $CC_SRC_PATH
   npm install

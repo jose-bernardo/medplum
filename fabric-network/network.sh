@@ -61,7 +61,7 @@ networkPurge() {
   docker-compose ${COMPOSE_FILES} down --rmi all --volumes --remove-orphans
   res=$?
   verifyResult $res "Dockers purge failed"
-  rm -rf ${PWD}/organizations ${PWD}/channel-artifacts ${PWD}/packagedChaincode
+  rm -rf ${PWD}/channel-artifacts ${PWD}/packagedChaincode
 }
 
 networkDown() {
