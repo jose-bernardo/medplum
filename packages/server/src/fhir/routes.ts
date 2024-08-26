@@ -1,6 +1,6 @@
 import { allOk, ContentType, isOk, badRequest, OperationOutcomeError } from '@medplum/core';
 import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
-import { Resource, ResourceType } from '@medplum/fhirtypes';
+import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
 import { asyncWrap } from '../async';
 import { getConfig } from '../config';
@@ -280,7 +280,7 @@ function initInternalFhirRouter(): FhirRouter {
 
   router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
-    const actionLog = await getFabricGateway().readActionLogEntry(id) as Resource;
+    const actionLog = await getFabricGateway().readActionLogEntry(id);
     return [allOk, actionLog];
   })
 
@@ -309,7 +309,7 @@ protectedRoutes.use(
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (!request.pathname.includes('$graphql') && result[1] !== undefined) {
-      const actionLog = await getFabricGateway().readActionLogEntry(req.body.actionLogId) as Resource;
+      const actionLog = await getFabricGateway().readActionLogEntry(req.body.actionLogId);
       if (actionLog === undefined) {
         throw new OperationOutcomeError(badRequest('request not logged in the network'));
       }
