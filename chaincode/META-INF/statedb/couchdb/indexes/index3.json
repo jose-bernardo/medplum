@@ -1,8 +1,0 @@
-{
-  "index":{
-    "fields":["Owner", "ResourceType"]
-  },
-  "ddoc":"index3Doc",
-  "name":"index3",
-  "type":"json"
-}

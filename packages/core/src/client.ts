@@ -1904,11 +1904,11 @@ export class MedplumClient extends EventTarget {
    * See the FHIR "create" operation for full details: https://www.hl7.org/fhir/http.html#create
    * @category Create
    * @param resource - The FHIR resource to create.
-   * @param actionLogId - ID of the log entry in the fabric network describing the action executed
+   * @param actionId - ID of the action entry in the fabric network describing the action executed
    * @param options - Optional fetch options.
    * @returns The result of the create operation.
    */
-  createResource<T extends Resource>(resource: T, actionLogId?: string, options?: MedplumRequestOptions): Promise<T> {
+  createResource<T extends Resource>(resource: T, actionId?: string, options?: MedplumRequestOptions): Promise<T> {
     if (!resource.resourceType) {
       throw new Error('Missing resourceType');
     }
@@ -1918,7 +1918,7 @@ export class MedplumClient extends EventTarget {
     }
 
     this.invalidateSearches(resource.resourceType);
-    return this.post(this.fhirUrl(resource.resourceType), {resource: resource, actionLogId: actionLogId}, undefined, options);
+    return this.post(this.fhirUrl(resource.resourceType), {resource: resource, actionId: actionId}, undefined, options);
   }
 
   /**

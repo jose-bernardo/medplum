@@ -1,5 +1,5 @@
 import { allOk, ContentType, isOk, badRequest, OperationOutcomeError } from '@medplum/core';
-import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
+import { FhirRequest, FhirResponse, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
 import { asyncWrap } from '../async';
@@ -278,9 +278,9 @@ function initInternalFhirRouter(): FhirRouter {
     }
   });
 
-  router.add('POST', '/:resourceType/:id/log', async (req: FhirRequest) => {
+  router.add('POST', '/log/:id', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
-    const actionLog = await getFabricGateway().readActionLogEntry(id);
+    const actionLog = await getFabricGateway().readAction(id);
     return [allOk, actionLog];
   })
 
@@ -306,30 +306,42 @@ protectedRoutes.use(
       throw new OperationOutcomeError(badRequest('resource without id'));
     }
 
-    const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
-    if (!request.pathname.includes('$graphql') && result[1] !== undefined) {
-      const actionLog = await getFabricGateway().readActionLogEntry(req.body.actionLogId);
+    let result: FhirResponse;
+
+    if (!request.pathname.includes('$graphql')) {
+      const actionLog = await getFabricGateway().readAction(req.body.actionId);
       if (actionLog === undefined) {
-        throw new OperationOutcomeError(badRequest('request not logged in the network'));
+        throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
       }
 
-      const hash = sha256(JSON.stringify(result[1]));
       // Read request
       if (request.method === 'GET') {
-        console.log('Here I should verify if data is corrupted')
-        /*
-        delete result[1].meta;
-        if (resource.EHR.Hash !== sha256(JSON.stringify(result[1]))) {
-          globalLogger.warn("Resource in FHIR database is corrupted.")
-          //rockFs.rebuildResource(request.body.id);
-          result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+
+        if (result.length === 1) {
+          throw new OperationOutcomeError(result[0]);
         }
-        */
+
+        const record = await getFabricGateway().readRecord(request.body.id);
+        const recordData = result[1];
+        delete recordData.meta;
+        if (record.Hash !== sha256(JSON.stringify(recordData))) {
+          console.log('Digest of data being read does not match fabric network digest');
+        }
       }
+
       // Write request
       else {
-        console.log('Here I should just verify if there is an entry on the ledger with the correct hash')
+        const record = await getFabricGateway().readRecord(request.body.id);
+        const recordData = request.body;
+        if (record.Hash !== sha256(JSON.stringify(recordData))) {
+          throw new OperationOutcomeError(badRequest('Digest of data being stored does not match fabric network digest'));
+        }
+
+        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
       }
+    } else {
+      result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     }
 
     if (result.length === 1) {

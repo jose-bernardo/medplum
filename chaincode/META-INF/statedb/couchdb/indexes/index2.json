@@ -1,8 +1,0 @@
-{
-  "index":{
-    "fields":["ResourceType"]
-  },
-  "ddoc":"index2Doc",
-  "name":"index2",
-  "type":"json"
-}

@@ -60,3 +60,5 @@ export -f errorln
 export -f successln
 export -f infoln
 export -f verifyResult
+
+exit 0

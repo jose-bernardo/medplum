@@ -87,7 +87,21 @@ export class FabricGateway {
     this.contract = network.getContract(this.options.chaincodeName);
   }
 
-  async evaluateAsset(id: string): Promise<JSON | undefined> {
+  async readAction(actionId: string): Promise<any> {
+    if (!this.contract) {
+      throw new Error('contract not defined');
+    }
+
+    console.log('\n--> Evaluate Transaction: ReadAction');
+    const resultBytes = await this.contract.evaluateTransaction('ReadAction', actionId);
+    const resultJson = utf8Decoder.decode(resultBytes);
+    const result = JSON.parse(resultJson);
+    console.log('*** Result:', result);
+
+    return result;
+  }
+
+  async readRecord(id: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
@@ -106,12 +120,27 @@ export class FabricGateway {
     }
   }
 
-  async recordUpdateOnLedger(resourceId: string, hash: string): Promise<any> {
+  async readRecordTx(resourceId: string, actionId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
-    const resultBytes = await this.contract.submitTransaction('CreateEHR', resourceId, hash);
+    console.log('\n--> Submit Transaction: ReadRecordTx');
+    const resultBytes = await this.contract.submitTransaction('ReadRecordTx', resourceId, actionId);
+    const resultJson = utf8Decoder.decode(resultBytes);
+    const result = JSON.parse(resultJson);
+    console.log('*** Result:', result);
+
+    return result;
+  }
+
+  async createRecord(resourceId: string, hash: string, actionId: string): Promise<any> {
+    if (!this.contract) {
+      throw new Error('contract not defined');
+    }
+
+    console.log('\n--> Submit Transaction: CreateRecord');
+    const resultBytes = await this.contract.submitTransaction('CreateRecord', resourceId, hash, actionId);
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
     console.log('*** Result:', result);
@@ -120,14 +149,13 @@ export class FabricGateway {
     //return this.contract.newProposal('CreateEHR', { arguments: [resourceId, hash] })
   }
 
-  async readActionLogEntry(logEntryId: string): Promise<any> {
+  async deleteRecord(resourceId: string, actionId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Evaluate Transaction: ReadActionLogEntry');
-
-    const resultBytes = await this.contract.evaluateTransaction('ReadActionLogEntry', logEntryId);
+    console.log('\n--> Submit Transaction: DeleteRecord');
+    const resultBytes = await this.contract.submitTransaction('CreateRecord', resourceId, actionId);
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
     console.log('*** Result:', result);

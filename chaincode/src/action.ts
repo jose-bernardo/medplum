@@ -1,0 +1,25 @@
+import {Object, Property} from 'fabric-contract-api';
+
+@Object()
+export class Action {
+  @Property()
+  public docType?: string;
+
+  @Property()
+  public ID: string = '';
+
+  @Property()
+  public Requestor: string = '';
+
+  @Property()
+  public RecordID: string = '';
+
+  @Property()
+  public Timestamp?: number = Date.now();
+
+  @Property()
+  public FunctionName: string = '';
+
+  @Property()
+  public FunctionParameters: string[] = [];
+}

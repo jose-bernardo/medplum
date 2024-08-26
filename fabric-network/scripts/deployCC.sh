@@ -161,3 +161,5 @@ queryCommitted 3
 rm log.txt
 
 successln "Chaincode ${CC_NAME} successful installed on all peers"
+
+exit 0
