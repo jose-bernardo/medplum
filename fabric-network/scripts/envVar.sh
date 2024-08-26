@@ -18,5 +18,3 @@ export CC_NAME="medsky"
 export CC_SRC_PATH=${PWD}/../chaincode
 export CC_VERSION="1.0"
 export CC_SEQUENCE="1"
-
-exit 0

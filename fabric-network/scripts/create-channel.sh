@@ -137,5 +137,3 @@ joinChannel 3
 setAnchorPeer 1
 setAnchorPeer 2
 setAnchorPeer 3
-
-exit 0
