@@ -106,7 +106,7 @@ export class FabricGateway {
     }
   }
 
-  async recordUpdateOnLedger(hash: string, resourceId: string): Promise<JSON> {
+  async recordUpdateOnLedger(resourceId: string, hash: string): Promise<JSON> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
