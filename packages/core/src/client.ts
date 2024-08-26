@@ -1908,7 +1908,7 @@ export class MedplumClient extends EventTarget {
    * @param options - Optional fetch options.
    * @returns The result of the create operation.
    */
-  createResource<T extends Resource>(resource: T, actionLogId: string, options?: MedplumRequestOptions): Promise<T> {
+  createResource<T extends Resource>(resource: T, actionLogId?: string, options?: MedplumRequestOptions): Promise<T> {
     if (!resource.resourceType) {
       throw new Error('Missing resourceType');
     }
@@ -1968,7 +1968,7 @@ export class MedplumClient extends EventTarget {
     options?: MedplumRequestOptions
   ): Promise<T> {
     return ((await this.searchOne(resource.resourceType, query, options)) ??
-      this.createResource(resource, options)) as Promise<T>;
+      this.createResource(resource, undefined, options)) as Promise<T>;
   }
 
   /**
@@ -2290,6 +2290,7 @@ export class MedplumClient extends EventTarget {
         sent: new Date().toISOString(),
         payload: [{ contentString: text }],
       },
+      undefined,
       options
     );
   }
@@ -2872,6 +2873,7 @@ export class MedplumClient extends EventTarget {
       content: {
         contentType: createMediaOptions.contentType,
       },
+      undefined,
       ...additionalFields,
     });
 
