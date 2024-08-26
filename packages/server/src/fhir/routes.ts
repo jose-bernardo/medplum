@@ -298,7 +298,7 @@ protectedRoutes.use(
       pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
       params: req.params,
       query: req.query as Record<string, string>,
-      body: req.body,
+      body: req.body.resource,
       headers: req.headers,
     };
 
@@ -309,7 +309,7 @@ protectedRoutes.use(
 
     const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
     if (!request.pathname.includes('$graphql') && result[1] !== undefined) {
-      const actionLog = await getFabricGateway().readActionLogEntry(req.params.logEntryId) as Resource;
+      const actionLog = await getFabricGateway().readActionLogEntry(req.body.actionLogId) as Resource;
       if (actionLog === undefined) {
         throw new OperationOutcomeError(badRequest('request not logged in the network'));
       }
