@@ -62,9 +62,8 @@ createOrgs() {
 }
 
 networkDown() {
-  clearContainers
   eraseVolumes
-  rm -rf ${PWD}/organizations ${PWD}/channel-artifacts
+  rm -rf ${PWD}/organizations ${PWD}/channel-artifacts ${PWD}/packagedChaincode
 }
 
 networkUp() {
@@ -122,7 +121,6 @@ joinChannel() {
 	local rc=1
 	local COUNTER=1
   infoln "Joining org$ORG peer to the channel"
-	## Sometimes Join takes time, hence retry
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
     sleep $DELAY
     set -x
@@ -150,6 +148,27 @@ createConfigUpdate() {
   { set +x; } 2>/dev/null
 }
 
+fetchChannelConfig() {
+  ORG=$1
+  CHANNEL=$2
+  OUTPUT=$3
+
+  setGlobals $ORG
+
+  infoln "Fetching the most recent configuration block for the channel"
+  set -x
+  peer channel fetch config channel-artifacts/config_block.pb -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com -c $CHANNEL --tls --cafile "$ORDERER_CA"
+  { set +x; } 2>/dev/null
+
+  infoln "Decoding config block to JSON and isolating config to ${OUTPUT}"
+  set -x
+  configtxlator proto_decode --input channel-artifacts/config_block.pb --type common.Block --output channel-artifacts/config_block.json
+  jq .data.data[0].payload.data.config channel-artifacts/config_block.json >"${OUTPUT}"
+  res=$?
+  { set +x; } 2>/dev/null
+  verifyResult $res "Failed to parse channel configuration, make sure you have jq installed"
+}
+
 createAnchorPeerUpdate() {
   infoln "Fetching channel config for channel $CHANNEL_NAME"
   fetchChannelConfig $ORG $CHANNEL_NAME channel-artifacts/${CORE_PEER_LOCALMSPID}config.json
@@ -170,7 +189,7 @@ createAnchorPeerUpdate() {
   fi
 
   set -x
-  jq '.channel_group.groups.Application.groups.'${CORE_PEER_LOCALMSPID}'.values += {"AnchorPeers":{"mod_policy": "Admins","value":{"anchor_peers": [{"host": "'$HOST'","port": '$PORT'}]},"version": "0"}}' ${TEST_NETWORK_HOME}/channel-artifacts/${CORE_PEER_LOCALMSPID}config.json > ${TEST_NETWORK_HOME}/channel-artifacts/${CORE_PEER_LOCALMSPID}modified_config.json
+  jq '.channel_group.groups.Application.groups.'${CORE_PEER_LOCALMSPID}'.values += {"AnchorPeers":{"mod_policy": "Admins","value":{"anchor_peers": [{"host": "'$HOST'","port": '$PORT'}]},"version": "0"}}' channel-artifacts/${CORE_PEER_LOCALMSPID}config.json > channel-artifacts/${CORE_PEER_LOCALMSPID}modified_config.json
   res=$?
   { set +x; } 2>/dev/null
   verifyResult $res "Channel configuration update for anchor peer failed, make sure you have jq installed"
@@ -179,7 +198,7 @@ createAnchorPeerUpdate() {
 }
 
 updateAnchorPeer() {
-  peer channel update -o localhost:7101 --ordererTLSHostnameOverride orderer.example.com -c $CHANNEL_NAME -f channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile "$ORDERER_CA" >&log.txt
+  peer channel update -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com -c $CHANNEL_NAME -f channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls --cafile "$ORDERER_CA" >&log.txt
   res=$?
   cat log.txt
   verifyResult $res "Anchor peer update failed"
@@ -321,9 +340,6 @@ function commitChaincodeDefinition() {
 
 function queryCommitted() {
   ORG=$1
-  if $2; then
-    MAX_RETRY=$2
-  fi
   setGlobals $ORG
   EXPECTED_RESULT="Version: ${CC_VERSION}, Sequence: ${CC_SEQUENCE}, Endorsement Plugin: escc, Validation Plugin: vscc"
   infoln "Querying chaincode definition on peer0.org${ORG} on channel '$CHANNEL_NAME'..."
