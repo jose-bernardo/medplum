@@ -1,3 +1,5 @@
+version: '3.7'
+
 services:
   peer0.org1.example.com:
     container_name: peer0.org1.example.com

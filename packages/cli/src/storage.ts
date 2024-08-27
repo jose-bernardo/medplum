@@ -1,6 +1,5 @@
 import { ClientStorage } from '@medplum/core';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 
 export class FileSystemStorage extends ClientStorage {
@@ -9,7 +8,7 @@ export class FileSystemStorage extends ClientStorage {
 
   constructor(profile: string) {
     super();
-    this.dirName = resolve(homedir(), '.medplum');
+    this.dirName = resolve('.medplum');
     this.fileName = resolve(this.dirName, profile + '.json');
   }
 

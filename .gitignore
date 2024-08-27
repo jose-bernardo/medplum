@@ -39,6 +39,8 @@ packages/react-hooks/dist
 packages/server/dist/
 packages/fabric/dist
 
+chaincode/dist
+
 # Storybook output
 storybook-static/
 
@@ -87,8 +89,8 @@ packages/server/organizations
 fabric-network/bin
 fabric-network/builders
 
-# Chaincode vendor
-chaincode/vendor
+# Medplum cli credentials
+packages/cli/.medplum
 
 # JetBrains stuff
 .idea/

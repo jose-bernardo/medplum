@@ -1,6 +1,5 @@
 import { Command } from 'commander';
 import { readdirSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 import { FileSystemStorage } from './storage';
 import { createMedplumCommand } from './util/command';
@@ -34,7 +33,7 @@ removeProfile
   });
 
 listProfiles.description('List all profiles saved').action(async () => {
-  const dir = resolve(homedir(), '.medplum');
+  const dir = resolve('.medplum');
   const files = readdirSync(dir);
   const allProfiles: any[] = [];
   files.forEach((file) => {
