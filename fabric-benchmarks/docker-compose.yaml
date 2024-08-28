@@ -11,3 +11,4 @@ services:
         - CALIPER_NETWORKCONFIG=network.yaml
         volumes:
         - ../fabric-network/organizations:/hyperledger/caliper/workspace/organizations
+        - chaincode:/hyperledger/caliper/chaincode
