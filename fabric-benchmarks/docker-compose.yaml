@@ -15,4 +15,5 @@ services:
     volumes:
       - ../fabric-network:/hyperledger/caliper/workspace/fabric-network
       - ./:/hyperledger/caliper/workspace/fabric-benchmarks
+    user: "${UID}:${GID}"
     working_dir: /hyperledger/caliper/workspace/fabric-benchmarks
