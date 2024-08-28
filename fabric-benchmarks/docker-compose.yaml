@@ -14,5 +14,5 @@ services:
       - CALIPER_NETWORKCONFIG=network.yaml
     volumes:
       - ../fabric-network:/hyperledger/caliper/workspace/fabric-network
-      - ./fabric-benchmarks:/hyperledger/caliper/workspace/fabric-benchmarks
-    working_dir: /root
+      - ./:/hyperledger/caliper/workspace/fabric-benchmarks
+    working_dir: /hyperledger/caliper/workspace/fabric-benchmarks
