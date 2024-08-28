@@ -8,9 +8,10 @@ services:
       service: hyperledger-caliper
     command: launch manager
     environment:
+      - CALIPER_WORKSPACE=/hyperledger/caliper/workspace/fabric-benchmarks
       - CALIPER_BIND_SUT=fabric:fabric-gateway
-      - CALIPER_BENCHCONFIG=fabric-benchmarks/chaincode/medsky/config.yaml
-      - CALIPER_NETWORKCONFIG=fabric-benchmarks/network.yaml
+      - CALIPER_BENCHCONFIG=chaincode/medsky/config.yaml
+      - CALIPER_NETWORKCONFIG=network.yaml
     volumes:
       - ../fabric-network:/hyperledger/caliper/workspace/fabric-network
       - ./:/hyperledger/caliper/workspace/fabric-benchmarks
