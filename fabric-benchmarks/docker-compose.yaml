@@ -1,5 +1,8 @@
 version: '2'
 
+volumes:
+    - caliper:
+
 services:
     caliper:
         container_name: caliper
@@ -11,4 +14,4 @@ services:
         - CALIPER_NETWORKCONFIG=network.yaml
         volumes:
         - ../fabric-network/organizations:/hyperledger/caliper/workspace/organizations
-        - chaincode:/hyperledger/caliper/chaincode
+        - chaincode:/hyperledger/caliper/workspace/chaincode
