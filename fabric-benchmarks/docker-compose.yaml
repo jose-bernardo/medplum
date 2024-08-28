@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+    caliper:
+        container_name: caliper
+        image: hyperledger/caliper:0.6.0
+        command: launch manager
+        environment:
+        - CALIPER_BIND_SUT=fabric:fabric-gateway
+        - CALIPER_BENCHCONFIG=chaincode/medsky/config.yaml
+        - CALIPER_NETWORKCONFIG=network.yaml
+        volumes:
+        - ../fabric-network/organizations:/hyperledger/caliper/workspace/organizations
