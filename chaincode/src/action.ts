@@ -6,9 +6,6 @@ export class Action {
   public docType?: string;
 
   @Property()
-  public ID: string = '';
-
-  @Property()
   public Requestor: string = '';
 
   @Property()

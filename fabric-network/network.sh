@@ -55,6 +55,9 @@ createOrgs() {
   cp -r organizations ../packages/server/organizations
 
   successln "Successfully created all organization identities"
+
+  infoln "Generating CCP files for Org1 and Org2"
+  ./connection-profiles/ccp-generate.sh
 }
 
 networkPurge() {

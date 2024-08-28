@@ -33,14 +33,13 @@ export class MedskyContract extends Contract {
     }
 
     const action: Action =  {
-      ID: actionId,
       Requestor: ctx.stub.getCreator().idBytes.toString(),
       RecordID: recordId,
       FunctionName: ctx.stub.getFunctionAndParameters().fcn,
       FunctionParameters: ctx.stub.getFunctionAndParameters().params
     }
 
-    return ctx.stub.putState(action.ID, Buffer.from(JSON.stringify(action), 'utf8'));
+    return ctx.stub.putState(actionId, Buffer.from(JSON.stringify(action), 'utf8'));
   }
 
   @Transaction(false)
@@ -82,7 +81,6 @@ export class MedskyContract extends Contract {
     }
 
     const record: Record = {
-      ID: recordId,
       From: ctx.stub.getCreator().idBytes.toString(),
       Hash: hash
     };
@@ -100,7 +98,6 @@ export class MedskyContract extends Contract {
     }
 
     const updatedRecord: Record = {
-      ID: recordId,
       From: ctx.stub.getCreator().idBytes.toString(),
       Hash: hash
     };

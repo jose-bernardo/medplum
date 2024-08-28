@@ -6,9 +6,6 @@ export class Record {
     public docType?: string;
 
     @Property()
-    public ID: string = '';
-
-    @Property()
     public From: string = '';
 
     @Property()
