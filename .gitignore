@@ -40,7 +40,7 @@ packages/server/dist/
 packages/fabric-gateway/dist
 packages/rockfsapi/dist
 
-chaincode/dist
+fabric-network/chaincode/dist
 
 # Storybook output
 storybook-static/

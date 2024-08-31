@@ -15,6 +15,6 @@ export PEER0_ORG3_CA=${PWD}/organizations/peerOrganizations/org3.example.com/tls
 
 # Chaincode vars
 export CC_NAME="medsky"
-export CC_SRC_PATH=${PWD}/../chaincode
+export CC_SRC_PATH=${PWD}/chaincode
 export CC_VERSION="1.0"
 export CC_SEQUENCE="1"
