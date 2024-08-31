@@ -309,7 +309,7 @@ protectedRoutes.use(
     if (!request.pathname.includes('$graphql')) {
       // Read request
       if (request.method === 'GET') {
-        const actionId = req.params.actionId;
+        const actionId = req.query.actionId;
         if (actionId === undefined) {
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
