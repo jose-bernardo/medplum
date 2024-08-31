@@ -1644,7 +1644,7 @@ export class MedplumClient extends EventTarget {
     actionId?: string,
     options?: MedplumRequestOptions
   ): ReadablePromise<ExtractResource<K>> {
-    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, recordId) + `actionId=${actionId}`, options);
+    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, recordId) + `?actionId=${actionId}`, options);
   }
 
   /**
