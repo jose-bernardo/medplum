@@ -1641,7 +1641,7 @@ export class MedplumClient extends EventTarget {
   readResource<K extends ResourceType>(
     resourceType: K,
     recordId: string,
-    actionId: string,
+    actionId?: string,
     options?: MedplumRequestOptions
   ): ReadablePromise<ExtractResource<K>> {
     return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, recordId) + `actionId=${actionId}`, options);
@@ -1679,7 +1679,7 @@ export class MedplumClient extends EventTarget {
     if (!resourceType || !id) {
       return new ReadablePromise(Promise.reject(new Error('Invalid reference')));
     }
-    return this.readResource(resourceType as ResourceType, id, options) as ReadablePromise<T>;
+    return this.readResource(resourceType as ResourceType, id, undefined, options) as ReadablePromise<T>;
   }
 
   /**
