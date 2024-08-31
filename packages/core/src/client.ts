@@ -1633,16 +1633,18 @@ export class MedplumClient extends EventTarget {
    * See the FHIR "read" operation for full details: https://www.hl7.org/fhir/http.html#read
    * @category Read
    * @param resourceType - The FHIR resource type.
-   * @param id - The resource ID.
+   * @param recordId - The resource ID.
+   * @param actionId - The action ID.
    * @param options - Optional fetch options.
    * @returns The resource if available.
    */
   readResource<K extends ResourceType>(
     resourceType: K,
-    id: string,
+    recordId: string,
+    actionId: string,
     options?: MedplumRequestOptions
   ): ReadablePromise<ExtractResource<K>> {
-    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, id), options);
+    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, recordId) + `actionId=${actionId}`, options);
   }
 
   /**

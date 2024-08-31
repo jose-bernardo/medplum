@@ -302,36 +302,52 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    if (request.body.id === undefined) {
-      throw new OperationOutcomeError(badRequest('resource without id'));
-    }
+    console.log(request);
 
     let result: FhirResponse;
 
     if (!request.pathname.includes('$graphql')) {
-      const actionLog = await getFabricGateway().readAction(req.body.actionId);
-      if (actionLog === undefined) {
-        throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
-      }
-
       // Read request
       if (request.method === 'GET') {
+        const actionId = req.params.actionId;
+        if (actionId === undefined) {
+          throw new OperationOutcomeError(badRequest('ActionID not provided.'));
+        }
+        const actionLog = await getFabricGateway().readAction(actionId);
+        if (actionLog === undefined) {
+          throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
+        }
+
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
         if (result.length === 1) {
           throw new OperationOutcomeError(result[0]);
         }
 
-        const record = await getFabricGateway().readRecord(request.body.id);
+        /*
+        const record = await getFabricGateway().readRecord(recordId);
         const recordData = result[1];
         delete recordData.meta;
         if (record.Hash !== sha256(JSON.stringify(recordData))) {
           console.log('Digest of data being read does not match fabric network digest');
         }
+        */
       }
 
       // Write request
       else {
+        if (request.body.id === undefined) {
+          throw new OperationOutcomeError(badRequest('Resource without id'));
+        }
+        const actionId = req.body.actionId;
+        if (actionId === undefined) {
+          throw new OperationOutcomeError(badRequest('ActionID not provided.'));
+        }
+        const actionLog = await getFabricGateway().readAction(actionId);
+        if (actionLog === undefined) {
+          throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
+        }
+
         const record = await getFabricGateway().readRecord(request.body.id);
         const recordData = request.body;
         if (record.Hash !== sha256(JSON.stringify(recordData))) {

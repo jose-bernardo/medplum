@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { FabricGateway } from 'fabric-gateway'
+import { FabricGateway } from '@medplum/fabric-gateway'
 import multer from 'multer';
 import { createReadStream } from 'fs';
 import { rm, rename  } from 'fs/promises'
