@@ -47,7 +47,8 @@ export class RockFSStorage implements BinaryStorage {
   async writeFile(key: string, _contentType: string | undefined, input: BinarySource): Promise<void> {
 
     const form = new FormData();
-    form.append('file', input, { filename: key, contentType: 'application/octet-stream' });
+    form.append('binary', input, { filename: key, contentType: 'application/octet-stream' });
+    form.append('id', key);
 
     const options =  {
       method: 'POST',
@@ -57,7 +58,7 @@ export class RockFSStorage implements BinaryStorage {
 
     console.log(options);
 
-    const response = await fetch(this.url + '/upload', options);
+    const response = await fetch(this.url + '/upload');
 
     console.log(response);
   }

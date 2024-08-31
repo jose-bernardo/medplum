@@ -25,7 +25,6 @@ async function computeFileHash(filepath: string, expectedHash: string): Promise<
 const upload = multer({ dest: tmpDirPath });
 const app = express();
 const gateway = new FabricGateway(config.fabric);
-console.log(gateway);
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);
