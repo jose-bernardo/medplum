@@ -39,7 +39,7 @@ import { valueSetValidateOperation } from './operations/valuesetvalidatecode';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
-import { createHash } from 'node:crypto';
+import { createHash } from 'crypto';
 import { getFabricGateway } from '../fabricgateway';
 
 const sha256 = (resource: string): string => {

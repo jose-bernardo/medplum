@@ -6,7 +6,7 @@ services:
     image: hyperledger/caliper:0.6.0
     labels:
       service: hyperledger-caliper
-    command: launch manager
+    command: sudo chown -R 900:900 "/.npm" && launch manager
     environment:
       - CALIPER_WORKSPACE=/hyperledger/caliper/workspace/fabric-benchmarks
       - CALIPER_BIND_SUT=fabric:fabric-gateway
@@ -15,5 +15,4 @@ services:
     volumes:
       - ../fabric-network:/hyperledger/caliper/workspace/fabric-network
       - ./:/hyperledger/caliper/workspace/fabric-benchmarks
-    user: "${UID}:${GID}"
     working_dir: /hyperledger/caliper/workspace/fabric-benchmarks

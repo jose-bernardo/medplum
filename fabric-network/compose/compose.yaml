@@ -49,7 +49,7 @@ services:
     volumes:
       - ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
       - ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer.example.com:/var/hyperledger/production/orderer
+      #- orderer.example.com:/var/hyperledger/production/orderer
     ports:
       - 7011:7011
       - 7012:7012
@@ -91,7 +91,7 @@ services:
     volumes:
       - ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp
       - ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer2.example.com:/var/hyperledger/production/orderer
+      #- orderer2.example.com:/var/hyperledger/production/orderer
     ports:
       - 7021:7021
       - 7022:7022
@@ -133,7 +133,7 @@ services:
     volumes:
       - ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/msp:/var/hyperledger/orderer/msp
       - ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer3.example.com:/var/hyperledger/production/orderer
+      #- orderer3.example.com:/var/hyperledger/production/orderer
     ports:
       - 7031:7031
       - 7032:7032
@@ -175,7 +175,7 @@ services:
     volumes:
       - ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/msp:/var/hyperledger/orderer/msp
       - ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer4.example.com:/var/hyperledger/production/orderer
+      #- orderer4.example.com:/var/hyperledger/production/orderer
     ports:
       - 7041:7041
       - 7042:7042
@@ -216,7 +216,7 @@ services:
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
       - ../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com:/etc/hyperledger/fabric
-      - peer0.org1.example.com:/var/hyperledger/production
+      #- peer0.org1.example.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:
@@ -255,7 +255,7 @@ services:
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
       - ../organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com:/etc/hyperledger/fabric
-      - peer0.org2.example.com:/var/hyperledger/production
+      #- peer0.org2.example.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:
@@ -294,7 +294,7 @@ services:
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
       - ../organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com:/etc/hyperledger/fabric
-      - peer0.org3.example.com:/var/hyperledger/production
+      #- peer0.org3.example.com:/var/hyperledger/production
     working_dir: /root
     command: peer node start
     ports:

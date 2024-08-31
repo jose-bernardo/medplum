@@ -1,4 +1,4 @@
-import { FabricGateway } from '@medplum/fabric';
+import { FabricGateway } from '@medplum/fabric-gateway';
 import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
 
