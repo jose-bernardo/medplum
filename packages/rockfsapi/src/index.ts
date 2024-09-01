@@ -21,7 +21,15 @@ async function verifyFileHash(filepath: string, expectedHash: string): Promise<b
   return hash.digest('hex') === expectedHash;
 }
 
-const upload = multer({ dest: tmpDirPath });
+const storage = multer.diskStorage({
+  destination: function(_req, _file, callback) {
+    callback(null, tmpDirPath)
+  },
+  filename: function(req, _file, callback) {
+    callback(null, req.body.id.replace('/', '.'))
+  }
+})
+const upload = multer({storage: storage});
 const app = express();
 const gateway = new FabricGateway(config.fabric);
 gateway.connect();
@@ -63,10 +71,10 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
   const isVerified = await verifyFileHash(req.file.path, expectedHash);
 
   if (isVerified) {
-    res.status(200).send(`File uploaded successfully: ${req.file.fieldname} (${req.file.size})`);
-    await rename(req.file.path, resolve(syncDirPath, req.file.filename));
+    res.status(200).send(`File uploaded successfully: ${req.body.id} (${req.file.size})`);
+    await rename(req.file.path, resolve(syncDirPath, req.body.id.replace('/', '.')));
   } else {
-    res.status(400).send().send('File hash does not match');
+    res.status(400).send('File hash does not match');
     await rm(req.file.path);
   }
 })

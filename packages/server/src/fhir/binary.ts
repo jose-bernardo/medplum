@@ -25,6 +25,19 @@ binaryRouter.get(
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
     const { recordId } = req.params;
+
+    const actionId = req.query.actionId as string;
+    if (actionId === undefined) {
+      sendOutcome(res, badRequest('ActionID not provided.'));
+      return;
+    }
+
+    const actionLog = await getFabricGateway().readAction(actionId);
+    if (actionLog === undefined) {
+      sendOutcome(res, badRequest('Request action is not recognized by the fabric network'));
+      return;
+    }
+
     const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);
   })
