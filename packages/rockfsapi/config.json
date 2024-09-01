@@ -4,7 +4,7 @@
   "fabric": {
     "channelName": "mychannel",
     "chaincodeName": "medsky",
-    "mspId": "Org2MSP",
+    "mspId": "Org1MSP",
     "keyPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/keystore/priv_sk",
     "certPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/signcerts/User1@org2.example.com-cert.pem",
     "tlsCertPath": "organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt",

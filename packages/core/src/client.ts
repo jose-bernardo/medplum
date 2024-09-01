@@ -2123,6 +2123,7 @@ export class MedplumClient extends EventTarget {
     arg4?: (e: ProgressEvent) => void,
     arg5?: MedplumRequestOptions
   ): Promise<Binary> {
+
     const createBinaryOptions = normalizeCreateBinaryOptions(arg1, arg2, arg3, arg4);
     const requestOptions = arg5 ?? (typeof arg2 === 'object' ? arg2 : {});
 
@@ -2140,7 +2141,7 @@ export class MedplumClient extends EventTarget {
     if (onProgress) {
       return this.uploadwithProgress(url, data, contentType, onProgress, requestOptions);
     }
-    return this.post(url, {data: data, recordId: recordId, actionId: actionId}, contentType, requestOptions);
+    return this.post(url, {recordId: recordId, actionId: actionId, data: data}, contentType, requestOptions);
   }
 
   uploadwithProgress(
