@@ -189,6 +189,8 @@ export class MockClient extends MedplumClient {
 
   async createBinary(
     arg1: BinarySource | CreateBinaryOptions,
+    recordId: string,
+    actionId: string,
     arg2: string | undefined | MedplumRequestOptions,
     arg3?: string,
     arg4?: (e: ProgressEvent) => void
@@ -207,6 +209,7 @@ export class MockClient extends MedplumClient {
     }
 
     return {
+      id: recordId,
       resourceType: 'Binary',
       contentType,
       url: 'https://example.com/binary/123',

@@ -2085,6 +2085,8 @@ export class MedplumClient extends EventTarget {
    *
    * @category Create
    * @param createBinaryOptions -The binary options. See `CreateBinaryOptions` for full details.
+   * @param recordId
+   * @param actionId
    * @param requestOptions - Optional fetch options. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @returns The result of the create operation.
    */
