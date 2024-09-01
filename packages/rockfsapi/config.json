@@ -7,7 +7,7 @@
     "mspId": "Org2MSP",
     "keyPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/keystore/priv_sk",
     "certPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/signcerts/User1@org2.example.com-cert.pem",
-    "tlsCertPath": "organizations/peerOrganizations/org1.example.com/peers/peer0.org2.example.com/tls/ca.crt",
+    "tlsCertPath": "organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt",
     "peerEndpoint": "10.100.0.12:8201",
     "peerHostAlias": "peer0.org1.example.com"
   }
