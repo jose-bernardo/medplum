@@ -1,11 +1,13 @@
 import {BinarySource, BinaryStorage, checkFileMetadata} from "../../fhir/storage";
 import {Binary} from "@medplum/fhirtypes";
 import {Readable} from "node:stream";
-import {sep} from "path";
+import {resolve, sep} from "path";
 import fetch from "node-fetch";
 import FormData from 'form-data';
 import {getConfig} from "../../config";
 import {createSign} from "crypto";
+import {createReadStream} from "fs";
+import fs from 'fs/promises';
 
 export class RockFSStorage implements BinaryStorage {
   private readonly url: string;
@@ -45,9 +47,12 @@ export class RockFSStorage implements BinaryStorage {
   }
 
   async writeFile(key: string, _contentType: string | undefined, input: BinarySource): Promise<void> {
+
+    await fs.writeFile('banana.txt', input);
+
     const form = new FormData();
 
-    form.append('binary', input as Readable);
+    form.append('binary', createReadStream(resolve(__dirname, 'banana.txt')));
     form.append('id', key);
 
     const options =  {
