@@ -47,7 +47,8 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
     return;
   }
 
-  const record = await gateway.readRecord(req.body.id);
+  console.log(req.body.id);
+  const record = await gateway.readRecord(req.body.id.split('/')[0]);
   const expectedHash = record.Hash;
 
   const isVerified = await computeFileHash(req.file.path, expectedHash);
