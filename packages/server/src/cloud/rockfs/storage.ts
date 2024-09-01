@@ -6,7 +6,6 @@ import fetch from "node-fetch";
 import FormData from 'form-data';
 import {getConfig} from "../../config";
 import {createSign} from "crypto";
-import {createReadStream} from "fs";
 
 export class RockFSStorage implements BinaryStorage {
   private readonly url: string;

@@ -1,17 +1,15 @@
 import express, { Request, Response } from 'express';
 import { FabricGateway } from '@medplum/fabric-gateway'
-import multer from 'multer';
-import { createReadStream } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import { rm, rename  } from 'fs/promises'
-import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import stream from 'stream/promises';
 import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
+import {writeFile} from "node:fs/promises";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
-const tmpDirPath = resolve(__dirname, '../', 'tmp');
 
 async function computeFileHash(filepath: string, expectedHash: string): Promise<boolean> {
   const input = createReadStream(filepath);
@@ -22,9 +20,9 @@ async function computeFileHash(filepath: string, expectedHash: string): Promise<
   return hash.digest('hex') === expectedHash;
 }
 
-const upload = multer({ dest: tmpDirPath });
 const app = express();
 const gateway = new FabricGateway(config.fabric);
+gateway.connect();
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);
@@ -41,11 +39,14 @@ app.get('/download/:filename', async (_req: Request, res: Response) => {
   });
 })
 
-app.post('/upload', upload.single('binary'), async (req: Request, res: Response) => {
-  if (!req.file) {
+app.post('/upload', async (req: Request, res: Response) => {
+  if (!req.body.binary) {
     res.status(400).send('No file uploaded.');
     return;
   }
+
+  const data = createReadStream(req.body.binary);
+  await writeFile(resolve(__dirname, '..', 'tmp', req.body.id), data);
 
   const record = await gateway.readRecord(req.body.id);
   const expectedHash = record.Hash;
