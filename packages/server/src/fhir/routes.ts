@@ -302,8 +302,8 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
+    console.log('PUTAAAAAA');
     console.log(request);
-    console.log(req.body);
 
     let result: FhirResponse;
 
