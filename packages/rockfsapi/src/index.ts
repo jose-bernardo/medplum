@@ -12,7 +12,7 @@ const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', 
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
 const tmpDirPath = resolve(__dirname, '../', 'tmp');
 
-async function computeFileHash(filepath: string, expectedHash: string): Promise<boolean> {
+async function verifyFileHash(filepath: string, expectedHash: string): Promise<boolean> {
   const input = createReadStream(filepath);
   const hash = createHash('sha256');
 
@@ -52,11 +52,15 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
   console.log(req.body);
 
   const record = await gateway.readRecord(req.body.id.split('/')[0]);
+  if (record === undefined) {
+    res.status(200).send('Request not recorded on the Fabric network.');
+    return;
+  }
   const expectedHash = record.Hash;
 
   console.log('Verifying received data before sending to RockFS');
 
-  const isVerified = await computeFileHash(req.file.path, expectedHash);
+  const isVerified = await verifyFileHash(req.file.path, expectedHash);
 
   if (isVerified) {
     res.status(200).send(`File uploaded successfully: ${req.file.fieldname} (${req.file.size})`);

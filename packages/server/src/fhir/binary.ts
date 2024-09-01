@@ -1,4 +1,4 @@
-import { ContentType, allOk, badRequest, created, isResource } from '@medplum/core';
+import {ContentType, allOk, badRequest, created, isResource} from '@medplum/core';
 import { Binary, OperationOutcome } from '@medplum/fhirtypes';
 import { Request, Response, Router } from 'express';
 import internal from 'stream';
@@ -9,6 +9,7 @@ import { authenticateRequest } from '../oauth/middleware';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
+import {getFabricGateway} from "../fabricgateway";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -33,8 +34,26 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   const ctx = getAuthenticatedContext();
 
   const create = req.method === 'POST';
-  const id = req.query.recordId as string;
+
+  const recordId = req.query.recordId as string;
+  if (recordId === undefined) {
+    sendOutcome(res, badRequest('RecordID not provided.'));
+    return;
+  }
+
+  const actionId = req.query.actionId as string;
+  if (actionId === undefined) {
+    sendOutcome(res, badRequest('ActionID not provided.'));
+    return;
+  }
+
   const contentType = req.get('Content-Type') as string;
+
+  const actionLog = await getFabricGateway().readAction(actionId);
+  if (actionLog === undefined) {
+    sendOutcome(res, badRequest('Request action is not recognized by the fabric network'));
+    return;
+  }
 
   const stream = getContentStream(req);
   if (!stream) {
@@ -61,7 +80,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
       // The binary handler does *not* use Express body-parser in order to support raw binary data.
       // Therefore, we need to manually parse the body stream as JSON.
       const body = JSON.parse(str);
-      if (isResource(body) && body.resourceType === 'Binary' && body.id === id) {
+      if (isResource(body) && body.resourceType === 'Binary' && body.id === recordId) {
         // Special case where the content is actually a Binary resource.
         binary = body as Binary;
         binaryContentSpecialCase = true;
@@ -81,7 +100,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     const securityContext = req.get('X-Security-Context');
     binary = {
       resourceType: 'Binary',
-      id,
+      id: recordId,
       contentType,
       securityContext: securityContext ? { reference: securityContext } : undefined,
     };
