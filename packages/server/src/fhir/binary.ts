@@ -32,11 +32,8 @@ binaryRouter.get(
 async function handleBinaryWriteRequest(req: Request, res: Response): Promise<void> {
   const ctx = getAuthenticatedContext();
 
-  console.log(req.body)
-  console.log(req.body.recordId);
-  console.log(req.body.data);
   const create = req.method === 'POST';
-  const { id } = req.params;
+  const id = req.query.recordId as string;
   const contentType = req.get('Content-Type') as string;
 
   const stream = getContentStream(req);
