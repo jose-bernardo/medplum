@@ -2056,7 +2056,7 @@ export class MedplumClient extends EventTarget {
   ): Promise<Attachment> {
     const createBinaryOptions = normalizeCreateBinaryOptions(arg1, arg2, arg3, arg4);
     const requestOptions = arg5 ?? (typeof arg2 === 'object' ? arg2 : {});
-    const binary = await this.createBinary(createBinaryOptions, requestOptions);
+    const binary = await this.createBinary(createBinaryOptions, undefined, undefined, requestOptions);
     return {
       contentType: createBinaryOptions.contentType,
       url: binary.url,
@@ -2088,13 +2088,15 @@ export class MedplumClient extends EventTarget {
    * @param requestOptions - Optional fetch options. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @returns The result of the create operation.
    */
-  createBinary(createBinaryOptions: CreateBinaryOptions, requestOptions?: MedplumRequestOptions): Promise<Binary>;
+  createBinary(createBinaryOptions: CreateBinaryOptions, recordId?: string, actionId?: string, requestOptions?: MedplumRequestOptions): Promise<Binary>;
 
   /**
    * @category Create
    * @param data - The binary data to upload.
    * @param filename - Optional filename for the binary.
    * @param contentType - Content type for the binary.
+   * @param recordId
+   * @param actionId
    * @param onProgress - Optional callback for progress events. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @param options - Optional fetch options. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @returns The result of the create operation.
@@ -2104,12 +2106,16 @@ export class MedplumClient extends EventTarget {
     data: BinarySource,
     filename: string | undefined,
     contentType: string,
+    recordId: string,
+    actionId: string,
     onProgress?: (e: ProgressEvent) => void,
     options?: MedplumRequestOptions
   ): Promise<Binary>;
 
   createBinary(
     arg1: BinarySource | CreateBinaryOptions,
+    recordId: string,
+    actionId: string,
     arg2: string | undefined | MedplumRequestOptions,
     arg3?: string,
     arg4?: (e: ProgressEvent) => void,
@@ -2132,7 +2138,7 @@ export class MedplumClient extends EventTarget {
     if (onProgress) {
       return this.uploadwithProgress(url, data, contentType, onProgress, requestOptions);
     }
-    return this.post(url, data, contentType, requestOptions);
+    return this.post(url, {data: data, recordId: recordId, actionId: actionId}, contentType, requestOptions);
   }
 
   uploadwithProgress(
@@ -2249,7 +2255,7 @@ export class MedplumClient extends EventTarget {
     const { docDefinition, tableLayouts, fonts, ...rest } = createPdfOptions;
     const blob = await this.createPdfImpl(docDefinition, tableLayouts, fonts);
     const createBinaryOptions = { ...rest, data: blob, contentType: 'application/pdf' };
-    return this.createBinary(createBinaryOptions, requestOptions);
+    return this.createBinary(createBinaryOptions, undefined, undefined, requestOptions);
   }
 
   /**

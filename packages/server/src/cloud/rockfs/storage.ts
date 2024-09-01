@@ -1,7 +1,7 @@
 import {BinarySource, BinaryStorage, checkFileMetadata} from "../../fhir/storage";
 import {Binary} from "@medplum/fhirtypes";
 import {Readable} from "node:stream";
-import {resolve, sep} from "path";
+import {sep} from "path";
 import fetch from "node-fetch";
 import FormData from 'form-data';
 import {getConfig} from "../../config";
@@ -52,7 +52,7 @@ export class RockFSStorage implements BinaryStorage {
 
     const form = new FormData();
 
-    form.append('binary', createReadStream(resolve(__dirname, 'banana.txt')));
+    form.append('binary', createReadStream('banana.txt'));
     form.append('id', key);
 
     const options =  {

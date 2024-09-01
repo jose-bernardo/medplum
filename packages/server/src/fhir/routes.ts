@@ -303,6 +303,7 @@ protectedRoutes.use(
     };
 
     console.log(request);
+    console.log(req.body);
 
     let result: FhirResponse;
 
