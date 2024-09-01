@@ -2133,6 +2133,8 @@ export class MedplumClient extends EventTarget {
     if (filename) {
       url.searchParams.set('_filename', filename);
     }
+    url.searchParams.set('recordId', recordId);
+    url.searchParams.set('actionId', actionId);
 
     if (securityContext?.reference) {
       this.setRequestHeader(requestOptions, 'X-Security-Context', securityContext.reference);
@@ -2141,7 +2143,7 @@ export class MedplumClient extends EventTarget {
     if (onProgress) {
       return this.uploadwithProgress(url, data, contentType, onProgress, requestOptions);
     }
-    return this.post(url, {recordId: recordId, actionId: actionId, data: data}, contentType, requestOptions);
+    return this.post(url, data, contentType, requestOptions);
   }
 
   uploadwithProgress(

@@ -278,11 +278,13 @@ function initInternalFhirRouter(): FhirRouter {
     }
   });
 
+  /*
   router.add('POST', '/log/:id', async (req: FhirRequest) => {
     const { id } = req.params as { id: string };
     const actionLog = await getFabricGateway().readAction(id);
     return [allOk, actionLog];
   })
+  */
 
   return router;
 }
@@ -301,9 +303,6 @@ protectedRoutes.use(
       body: req.body.resource,
       headers: req.headers,
     };
-
-    console.log('PUTAAAAAA');
-    console.log(request);
 
     let result: FhirResponse;
 
@@ -324,15 +323,6 @@ protectedRoutes.use(
         if (result.length === 1) {
           throw new OperationOutcomeError(result[0]);
         }
-
-        /*
-        const record = await getFabricGateway().readRecord(recordId);
-        const recordData = result[1];
-        delete recordData.meta;
-        if (record.Hash !== sha256(JSON.stringify(recordData))) {
-          console.log('Digest of data being read does not match fabric network digest');
-        }
-        */
       }
 
       // Write request

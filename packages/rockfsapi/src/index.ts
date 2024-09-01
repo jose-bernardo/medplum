@@ -31,6 +31,8 @@ app.get('/', (_req: Request, res: Response) => {
 })
 
 app.get('/download/:filename', async (_req: Request, res: Response) => {
+  console.log(_req);
+
   const filename = _req.params.filename;
   const filepath = resolve(config.syncDir, filename);
 
@@ -47,9 +49,12 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
     return;
   }
 
-  console.log(req.body.id);
+  console.log(req.body);
+
   const record = await gateway.readRecord(req.body.id.split('/')[0]);
   const expectedHash = record.Hash;
+
+  console.log('Verifying received data before sending to RockFS');
 
   const isVerified = await computeFileHash(req.file.path, expectedHash);
 
@@ -57,7 +62,7 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
     res.status(200).send(`File uploaded successfully: ${req.file.fieldname} (${req.file.size})`);
     await rename(req.file.path, resolve(syncDirPath, req.file.filename));
   } else {
-    res.status(401).send();
+    res.status(400).send().send('File hash does not match');
     await rm(req.file.path);
   }
 })
