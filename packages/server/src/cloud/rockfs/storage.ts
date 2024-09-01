@@ -6,6 +6,7 @@ import fetch from "node-fetch";
 import FormData from 'form-data';
 import {getConfig} from "../../config";
 import {createSign} from "crypto";
+import {createReadStream} from "fs";
 
 export class RockFSStorage implements BinaryStorage {
   private readonly url: string;
@@ -29,7 +30,7 @@ export class RockFSStorage implements BinaryStorage {
   async readBinary(binary: Binary): Promise<Readable> {
     const key = this.getKey(binary);
     console.log(key);
-    const response = await fetch(this.url + '/download?filename=' + key);
+    const response = await fetch(this.url + 'download?filename=' + key);
     console.log(response);
     return new Readable().wrap(response.body);
 }
@@ -45,9 +46,9 @@ export class RockFSStorage implements BinaryStorage {
   }
 
   async writeFile(key: string, _contentType: string | undefined, input: BinarySource): Promise<void> {
-
     const form = new FormData();
-    form.append('binary', input, { filename: key, contentType: 'application/octet-stream' });
+
+    form.append('binary', input as Readable);
     form.append('id', key);
 
     const options =  {
@@ -56,9 +57,7 @@ export class RockFSStorage implements BinaryStorage {
       body: form
     };
 
-    console.log(options);
-
-    const response = await fetch(this.url + '/upload');
+    const response = await fetch(this.url + 'upload', options);
 
     console.log(response);
   }

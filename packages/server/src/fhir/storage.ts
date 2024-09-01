@@ -30,6 +30,7 @@ export function initBinaryStorage(type?: string): void {
     binaryStorage = new S3Storage(type.replace('s3:', ''));
   } else if (type?.startsWith('rockfs:')) {
     binaryStorage = new RockFSStorage(type.replace('rockfs:', 'http://'));
+    console.log('USING ROCKFS');
   } else if (type?.startsWith('file:')) {
     binaryStorage = new FileSystemStorage(type.replace('file:', ''));
   } else {
