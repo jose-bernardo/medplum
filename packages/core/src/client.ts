@@ -2845,7 +2845,7 @@ export class MedplumClient extends EventTarget {
    * @param options - Optional fetch request init options.
    * @returns Promise to the response body as a blob.
    */
-  async download(url: URL | string, actionId: string, options: MedplumRequestOptions = {}): Promise<Blob> {
+  async download(url: URL | string, actionId?: string | undefined, options: MedplumRequestOptions = {}): Promise<Blob> {
     if (this.refreshPromise) {
       await this.refreshPromise;
     }
