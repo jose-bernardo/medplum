@@ -2841,10 +2841,11 @@ export class MedplumClient extends EventTarget {
    * Downloads the URL as a blob. Can accept binary URLs in the form of `Binary/{id}` as well.
    * @category Read
    * @param url - The URL to request. Can be a standard URL or one in the form of `Binary/{id}`.
+   * @param actionId - Action ID
    * @param options - Optional fetch request init options.
    * @returns Promise to the response body as a blob.
    */
-  async download(url: URL | string, options: MedplumRequestOptions = {}): Promise<Blob> {
+  async download(url: URL | string, actionId: string, options: MedplumRequestOptions = {}): Promise<Blob> {
     if (this.refreshPromise) {
       await this.refreshPromise;
     }
@@ -2852,6 +2853,8 @@ export class MedplumClient extends EventTarget {
     if (urlString.startsWith(BINARY_URL_PREFIX)) {
       url = this.fhirUrl(urlString);
     }
+
+    url = `${url}?actionId=${actionId}`;
 
     let headers = options.headers as Record<string, string> | undefined;
     if (!headers) {

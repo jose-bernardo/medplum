@@ -31,7 +31,7 @@ export class RockFSStorage implements BinaryStorage {
   async readBinary(binary: Binary): Promise<Readable> {
     const key = this.getKey(binary);
     console.log(key);
-    const response = await fetch(this.url + 'download?filename=' + key);
+    const response = await fetch(this.url + 'download/' + key);
     console.log(response);
     return new Readable().wrap(response.body);
 }

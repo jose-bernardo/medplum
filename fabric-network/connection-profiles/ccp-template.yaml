@@ -1,4 +1,5 @@
-name: fabric-network-org${ORG}
+---
+name: test-network-org${ORG}
 version: 1.0.0
 client:
   organization: Org${ORG}
@@ -10,15 +11,15 @@ organizations:
   Org${ORG}:
     mspid: Org${ORG}MSP
     peers:
-      - peer0.org${ORG}.example.com
+    - peer0.org${ORG}.example.com
     certificateAuthorities:
-      - ca.org${ORG}.example.com
+    - ca.org${ORG}.example.com
 peers:
   peer0.org${ORG}.example.com:
-    url: grpcs://10.100.0.12:${P0PORT}
+    url: grpcs://localhost:${P0PORT}
     tlsCACerts:
       pem: |
-        ${PEERPEM}
+          ${PEERPEM}
     grpcOptions:
       ssl-target-name-override: peer0.org${ORG}.example.com
       hostnameOverride: peer0.org${ORG}.example.com
