@@ -39,7 +39,7 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
   async submitTransaction() {
     this.txIndex++;
     let recordId = this.txIndex.toString();
-    let actionId = 'READ_ACTION' + this.txIndex.toString();
+    let actionId = this.txIndex.toString();
 
     let args = {
       contractId: 'medsky',
@@ -47,7 +47,7 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
       contractFunction: 'ReadRecordTx',
       contractArguments: [
         'Client' + this.workerIndex + '_RECORD' + recordId,
-        'Client' + this.workerIndex + '_ACTION' + actionId
+        'Client' + this.workerIndex + '_READ_ACTION' + actionId
       ],
       timeout: 30,
       readOnly: true
