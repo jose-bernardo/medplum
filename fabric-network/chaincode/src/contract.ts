@@ -67,7 +67,7 @@ export class MedskyContract extends Contract {
   public async ReadRecord(ctx: Context, recordId: string): Promise<string> {
     const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
     if (recordJSON.length === 0) {
-      throw new Error(`The record log ${recordId} does not exist`);
+      throw new Error(`The record ${recordId} does not exist`);
     }
 
     return recordJSON.toString();

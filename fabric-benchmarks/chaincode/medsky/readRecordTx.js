@@ -39,13 +39,16 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
   async submitTransaction() {
     this.txIndex++;
     let recordId = this.txIndex.toString();
-    let actionId = randomUUID().toString();
+    let actionId = 'READ_ACTION' + this.txIndex.toString();
 
     let args = {
       contractId: 'medsky',
       contractVersion: '1.0',
       contractFunction: 'ReadRecordTx',
-      contractArguments: ['Client' + this.workerIndex + '_RECORD' + recordId, actionId],
+      contractArguments: [
+        'Client' + this.workerIndex + '_RECORD' + recordId,
+        'Client' + this.workerIndex + '_ACTION' + actionId
+      ],
       timeout: 30,
       readOnly: true
     };

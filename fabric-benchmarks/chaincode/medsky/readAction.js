@@ -43,7 +43,7 @@ class ReadActionWorkload extends WorkloadModuleBase {
       contractId: 'medsky',
       contractVersion: '1.0',
       contractFunction: 'ReadAction',
-      contractArguments: ['Client' + this.workerIndex + '_RECORD' + actionId],
+      contractArguments: ['Client' + this.workerIndex + '_ACTION' + actionId],
       timeout: 30,
       readOnly: true
     };
