@@ -19,8 +19,8 @@ class MedSkyUser(HttpUser):
 
     @task
     def create_record(self):
-        recordId = 'CLIENT' + self.clientId + '_RECORD' + str(self.txId)
-        actionId = 'CLIENT' + self.clientId + '_ACTION' + str(self.txId)
+        recordId = 'CLIENT' + str(self.clientId) + '_RECORD' + str(self.txId)
+        actionId = 'CLIENT' + str(self.clientId) + '_CREATE_ACTION' + str(self.txId)
         data = open('dicom-sample.zip').read()
         with open('dicom-sample.zip', 'rb') as f:
             files = {'file': (os.path.basename(self.file_path), f)}
