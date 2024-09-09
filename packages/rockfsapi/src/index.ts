@@ -39,7 +39,7 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 
   const filename = _req.params.filename;
   const version = _req.params.version;
-  const filepath = resolve(syncDirPath, filename, '.', version);
+  const filepath = resolve(syncDirPath, filename + '.' + version);
 
   console.log(filepath);
 
