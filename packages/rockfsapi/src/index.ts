@@ -36,11 +36,12 @@ app.get('/', (_req: Request, res: Response) => {
 })
 
 app.get('/download/:filename/:version', async (_req: Request, res: Response) => {
-  console.log(_req);
 
   const filename = _req.params.filename;
   const version = _req.params.version;
   const filepath = resolve(syncDirPath, filename, '.', version);
+
+  console.log(filepath);
 
   res.download(filepath, err => {
     if (err) {
