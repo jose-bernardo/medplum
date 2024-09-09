@@ -21,7 +21,6 @@ class MedSkyUser(HttpUser):
     def create_record(self):
         recordId = 'CLIENT' + str(self.clientId) + '_RECORD' + str(self.txId)
         actionId = 'CLIENT' + str(self.clientId) + '_CREATE_ACTION' + str(self.txId)
-        data = open('dicom-sample.zip').read()
         with open('dicom-sample.zip', 'rb') as f:
             files = {'file': (os.path.basename(self.file_path), f)}
             response = self.client.post(f"/fhir/R4/Binary?recordId={recordId}&actionId={actionId}", files=files, stream=True);
