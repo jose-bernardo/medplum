@@ -41,8 +41,6 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
   const version = _req.params.version;
   const filepath = resolve(syncDirPath, filename + '.' + version);
 
-  console.log(filepath);
-
   res.download(filepath, err => {
     if (err) {
       res.status(404).send('File not found.');
@@ -64,8 +62,6 @@ app.post('/upload', upload.single('binary'), async (req: Request, res: Response)
     return;
   }
   const expectedHash = record.Hash;
-
-  console.log('Verifying received data before sending to RockFS');
 
   const isVerified = await verifyFileHash(req.file.path, expectedHash);
 
