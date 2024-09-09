@@ -55,6 +55,7 @@ display_help() {
 
 createOrgs() {
   rm -Rf organizations/peerOrganizations && rm -Rf organizations/ordererOrganizations
+  rm -Rf ../packages/server/organizations && rm -Rf ../packages/rockfsapi/organizations
 
   infoln "Generating certificates using cryptogen tool"
 
@@ -92,6 +93,8 @@ createOrgs() {
 
   infoln "Generating CCP files for Org1 and Org2"
   ./connection-profiles/ccp-generate.sh
+
+  cp -r organizations ../packages/server/organizations && cp -r organizations ../packages/rockfsapi/organizations
 }
 
 networkPurge() {
