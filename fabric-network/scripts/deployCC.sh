@@ -126,6 +126,18 @@ function queryCommitted() {
   fi
 }
 
+function initLedger() {
+  ORG=$1
+  setGlobals $ORG
+
+  peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
+    --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+    -C mychannel -n medsky \
+    --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+    --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+    -c '{"function":"InitLedger","Args":[]}'
+}
+
 infoln "Install chaincode on peer0.org1..."
 installChaincode 1
 infoln "Install chaincode on peer0.org2..."
@@ -163,6 +175,8 @@ commitChaincodeDefinition 1 2
 queryCommitted 1
 queryCommitted 2
 #queryCommitted 3
+
+initLedger 1
 
 rm log.txt
 

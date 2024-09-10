@@ -7,6 +7,36 @@ import { Action } from './action'
 @Info({title: 'Contract', description: 'Smart contract for managing medical records and log operations'})
 export class MedskyContract extends Contract {
 
+  @Transaction()
+  public async InitLedger(ctx: Context): Promise<void> {
+    for (let i = 0; i < 1000; i++) {
+      const record: Record = {
+        From: 'anyone',
+        Hash: '0a800e7a696fae9733efffe908aac21f2d5b072c7de575e8fef0ac7de5dc164a'
+      }
+
+      await ctx.stub.putState('RECORD_' + i.toString(), Buffer.from(stringify(sortKeysRecursive(record))));
+
+      const createAction: Action = {
+        Requestor: 'anyone',
+        RecordID: 'RECORD_' + i.toString(),
+        FunctionName: 'CreateRecord',
+        FunctionParameters: []
+      }
+
+      await ctx.stub.putState('CREATE_ACTION_' + i.toString(), Buffer.from(stringify(sortKeysRecursive(createAction))));
+
+      const readAction: Action = {
+        Requestor: 'anyone',
+        RecordID: 'RECORD_' + i.toString(),
+        FunctionName: 'ReadRecordTx',
+        FunctionParameters: []
+      }
+
+      await ctx.stub.putState('READ_ACTION_' + i.toString(), Buffer.from(stringify(sortKeysRecursive(readAction))));
+    }
+  }
+
   @Transaction(false)
   @Returns('boolean')
   public async ActionExists(ctx: Context, actionId: string): Promise<boolean> {
