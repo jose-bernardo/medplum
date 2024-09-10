@@ -222,18 +222,15 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
   }
 
   async createResource<T extends Resource>(resource: T): Promise<T> {
-    console.log(resource);
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    //const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     //TODO !!! this is just a hack to not get an error when starting the system for the first time
     if (resource.id === undefined) {
       resource.id = randomUUID();
-    } else if (resource.id.startsWith('Client')) {
-      //
-      ;
-    } else
-    if (!uuidRegex.test(resource.id as string)) {
-      resource.id = randomUUID();
     }
+
+    //if (!uuidRegex.test(resource.id as string)) {
+    //  resource.id = randomUUID();
+    //}
 
     try {
       const result = await this.updateResourceImpl(resource, true);
@@ -265,9 +262,11 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
     id: string,
     options?: ReadResourceOptions
   ): Promise<T> {
+    /*
     if (!id || !validator.isUUID(id)) {
       throw new OperationOutcomeError(notFound);
     }
+    */
 
     validateResourceType(resourceType);
 
@@ -545,10 +544,13 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
     if (!id) {
       throw new OperationOutcomeError(badRequest('Missing id'));
     }
+
+    /*
     if (!validator.isUUID(id)) {
       throw new OperationOutcomeError(badRequest('Invalid id'));
     }
     await this.validateResource(resource);
+    */
 
     if (!this.canWriteResourceType(resourceType)) {
       throw new OperationOutcomeError(forbidden);
