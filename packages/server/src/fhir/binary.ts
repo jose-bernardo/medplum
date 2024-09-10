@@ -48,9 +48,6 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   const create = req.method === 'POST';
 
-  console.log(req);
-  console.log(req.query);
-
   const recordId = req.query.recordId as string;
   if (recordId === undefined) {
     sendOutcome(res, badRequest('RecordID not provided.'));
@@ -133,7 +130,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   }
 
   if (!binaryContentSpecialCase) {
-    const filename = req.query['_filename'] as string | undefined;
+    const filename = undefined;
     await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource);
   }
 
