@@ -127,15 +127,23 @@ function queryCommitted() {
 }
 
 function initLedger() {
+  infoln "Invoking InitLedger"
+
   ORG=$1
   setGlobals $ORG
 
+  set -x
   peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
     --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
     -C mychannel -n medsky \
     --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
     --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
     -c '{"function":"InitLedger","Args":[]}'
+  res=$?
+  {set +x; } 2>/dev/null
+
+  verifyResult $res "InitLedger failed"
+  successln "Transaction submit successful"
 }
 
 infoln "Install chaincode on peer0.org1..."
