@@ -224,6 +224,12 @@ export class Repository extends BaseRepository implements FhirRepository<PoolCli
   async createResource<T extends Resource>(resource: T): Promise<T> {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     //TODO !!! this is just a hack to not get an error when starting the system for the first time
+    if (resource.id === undefined) {
+      resource.id = randomUUID();
+    } else if (resource.id.startsWith('Client')) {
+      //
+      ;
+    } else
     if (!uuidRegex.test(resource.id as string)) {
       resource.id = randomUUID();
     }
