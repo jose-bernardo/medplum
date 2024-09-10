@@ -48,6 +48,9 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   const create = req.method === 'POST';
 
+  console.log(req);
+  console.log(req.query);
+
   const recordId = req.query.recordId as string;
   if (recordId === undefined) {
     sendOutcome(res, badRequest('RecordID not provided.'));

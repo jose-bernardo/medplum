@@ -72,7 +72,6 @@ export class RockFSStorage implements BinaryStorage {
   }
 
   private getKey(binary: Binary): string {
-    console.log(binary.id);
     return binary.id + sep + binary.meta?.versionId;
   }
 
