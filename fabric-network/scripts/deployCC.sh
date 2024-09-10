@@ -140,7 +140,7 @@ function initLedger() {
     --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
     -c '{"function":"InitLedger","Args":[]}'
   res=$?
-  {set +x; } 2>/dev/null
+  { set +x; } 2>/dev/null
 
   verifyResult $res "InitLedger failed"
   successln "Transaction submit successful"
