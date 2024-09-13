@@ -7,6 +7,7 @@ import stream from 'stream/promises';
 import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
 import {Readable} from "node:stream";
+import {createWriteStream} from "node:fs";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
@@ -53,8 +54,9 @@ app.post('/upload', async (req: Request, res: Response) => {
   const isVerified = await verifyFileHash(binarySource, expectedHash);
 
   if (isVerified) {
-    res.status(200).send(`File uploaded successfully: ${req.params.key} (${req.file.size})`);
-    await writeFile(resolve(syncDirPath, (req.body.id as string).replace('/', '.')), binarySource);
+    res.status(200).send(`File uploaded successfully: ${req.params.key}`);
+    const writeStream = createWriteStream(resolve(syncDirPath, (req.query.key as string).replace('/', '.')));
+    await stream.pipeline(binarySource, writeStream);
   } else {
     res.status(400).send('File hash does not match');
   }
