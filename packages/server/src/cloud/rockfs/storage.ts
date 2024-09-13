@@ -3,11 +3,8 @@ import {Binary} from "@medplum/fhirtypes";
 import {Readable} from "node:stream";
 import {sep} from "path";
 import fetch from "node-fetch";
-import FormData from 'form-data';
 import {getConfig} from "../../config";
 import {createSign} from "crypto";
-import {createReadStream} from "fs";
-import fs from 'fs/promises';
 
 export class RockFSStorage implements BinaryStorage {
   private readonly url: string;
@@ -46,19 +43,16 @@ export class RockFSStorage implements BinaryStorage {
 
   async writeFile(key: string, _contentType: string | undefined, input: BinarySource): Promise<void> {
 
+    if (_contentType === undefined) {
+      throw new Error('ContentType is required');
+    }
+
     console.log('Uploading file...');
-
-    await fs.writeFile('banana.txt', input);
-
-    const form = new FormData();
-
-    form.append('binary', createReadStream('banana.txt'));
-    form.append('id', key);
 
     const options =  {
       method: 'POST',
-      headers: form.getHeaders(),
-      body: form
+      headers: { 'Content-Type': _contentType },
+      body: input
     };
 
     const response = await fetch(this.url + 'upload', options);
