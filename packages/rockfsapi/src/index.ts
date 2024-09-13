@@ -1,20 +1,19 @@
 import express, { Request, Response } from 'express';
 import { FabricGateway } from '@medplum/fabric-gateway'
-import { readFileSync } from 'fs';
-import { writeFile  } from 'fs/promises'
+import { createWriteStream, createReadStream, readFileSync } from 'fs';
 import { resolve } from 'path';
 import stream from 'stream/promises';
 import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
 import {Readable} from "node:stream";
-import {createWriteStream} from "node:fs";
+import { rm } from 'fs/promises'
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
 
-async function verifyFileHash(binary: Readable | string, expectedHash: string): Promise<boolean> {
+async function verifyFileHash(filePath: string, expectedHash: string): Promise<boolean> {
   const hash = createHash('sha256');
-
+  const binary = createReadStream(filePath);
   await stream.pipeline(binary, hash);
 
   return hash.digest('hex') === expectedHash;
@@ -51,13 +50,15 @@ app.post('/upload', async (req: Request, res: Response) => {
   }
   const expectedHash = record.Hash;
 
-  const isVerified = await verifyFileHash(binarySource, expectedHash);
+  const dest = resolve(syncDirPath, (req.query.key as string).replace('/', '.'));
+  const writeStream = createWriteStream(dest);
+  await stream.pipeline(binarySource, writeStream);
 
+  const isVerified = await verifyFileHash(dest, expectedHash);
   if (isVerified) {
     res.status(200).send(`File uploaded successfully: ${req.params.key}`);
-    const writeStream = createWriteStream(resolve(syncDirPath, (req.query.key as string).replace('/', '.')));
-    await stream.pipeline(binarySource, writeStream);
   } else {
+    await rm(dest)
     res.status(400).send('File hash does not match');
   }
 })
