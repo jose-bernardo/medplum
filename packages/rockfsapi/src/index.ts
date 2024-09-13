@@ -43,7 +43,7 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 app.post('/upload', async (req: Request, res: Response) => {
   const binarySource: Readable | string = req;
 
-  const record = await gateway.readRecord(req.params.key.split('/')[0]);
+  const record = await gateway.readRecord((req.query.key as string).split('/')[0]);
   if (record === undefined) {
     res.status(200).send('Request not recorded on the Fabric network.');
     return;
