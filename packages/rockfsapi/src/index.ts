@@ -6,12 +6,12 @@ import { resolve } from 'path';
 import stream from 'stream/promises';
 import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
-import {BinarySource} from "@medplum/server/src/fhir/storage";
+import {Readable} from "node:stream";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
 
-async function verifyFileHash(binary: BinarySource, expectedHash: string): Promise<boolean> {
+async function verifyFileHash(binary: Readable | string, expectedHash: string): Promise<boolean> {
   const hash = createHash('sha256');
 
   await stream.pipeline(binary, hash);
@@ -41,7 +41,7 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 })
 
 app.post('/upload', async (req: Request, res: Response) => {
-  const binarySource: BinarySource = req;
+  const binarySource: Readable | string = req;
 
   const record = await gateway.readRecord(req.params.key.split('/')[0]);
   if (record === undefined) {
