@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
 import { FabricGateway } from '@medplum/fabric-gateway'
-import multer from 'multer';
-import { createReadStream, readFileSync } from 'fs';
-import { rm, rename, writeFile  } from 'fs/promises'
+import { readFileSync } from 'fs';
+import { writeFile  } from 'fs/promises'
 import { resolve } from 'path';
 import stream from 'stream/promises';
 import { createHash } from 'crypto';
@@ -11,23 +10,15 @@ import {BinarySource} from "@medplum/server/src/fhir/storage";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
-const tmpDirPath = resolve(__dirname, '../', 'tmp');
 
-async function verifyFileHash(filepath: string, expectedHash: string): Promise<boolean> {
-  const input = createReadStream(filepath);
+async function verifyFileHash(binary: BinarySource, expectedHash: string): Promise<boolean> {
   const hash = createHash('sha256');
 
-  await stream.pipeline(input, hash);
+  await stream.pipeline(binary, hash);
 
   return hash.digest('hex') === expectedHash;
 }
 
-const storage = multer.diskStorage({
-  destination: function(_req, _file, callback) {
-    callback(null, tmpDirPath)
-  }
-})
-multer({storage: storage});
 const app = express();
 const gateway = new FabricGateway(config.fabric);
 gateway.connect();
@@ -52,23 +43,20 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 app.post('/upload', async (req: Request, res: Response) => {
   const binarySource: BinarySource = req;
 
-  await writeFile('test.txt', binarySource)
-
-  const record = await gateway.readRecord(req.body.id.split('/')[0]);
+  const record = await gateway.readRecord(req.params.key.split('/')[0]);
   if (record === undefined) {
     res.status(200).send('Request not recorded on the Fabric network.');
     return;
   }
   const expectedHash = record.Hash;
 
-  const isVerified = await verifyFileHash(req.file.path, expectedHash);
+  const isVerified = await verifyFileHash(binarySource, expectedHash);
 
   if (isVerified) {
-    res.status(200).send(`File uploaded successfully: ${req.body.id} (${req.file.size})`);
-    await rename(req.file.path, resolve(syncDirPath, (req.body.id as string).replace('/', '.')));
+    res.status(200).send(`File uploaded successfully: ${req.params.key} (${req.file.size})`);
+    await writeFile(resolve(syncDirPath, (req.body.id as string).replace('/', '.')), binarySource);
   } else {
     res.status(400).send('File hash does not match');
-    await rm(req.file.path);
   }
 })
 

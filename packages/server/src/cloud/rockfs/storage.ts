@@ -55,7 +55,7 @@ export class RockFSStorage implements BinaryStorage {
       body: input
     };
 
-    const response = await fetch(this.url + 'upload', options);
+    const response = await fetch(this.url + `upload?key=${key}`, options);
     console.log(response);
 
     if (response.status === 400) {
