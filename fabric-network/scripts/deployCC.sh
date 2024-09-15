@@ -129,6 +129,8 @@ function queryCommitted() {
 function initLedger() {
   infoln "Invoking InitLedger"
 
+  FILE_SIZE=$2
+
   ORG=$1
   setGlobals $ORG
 
@@ -138,7 +140,7 @@ function initLedger() {
     -C mychannel -n medsky \
     --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
     --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-    -c '{"function":"InitLedger","Args":[]}'
+    -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
   res=$?
   { set +x; } 2>/dev/null
 
@@ -184,7 +186,7 @@ queryCommitted 1
 queryCommitted 2
 #queryCommitted 3
 
-initLedger 1
+initLedger 1 "medium"
 
 rm log.txt
 
