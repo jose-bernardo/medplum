@@ -165,6 +165,7 @@ case $2 in
     ;;
   raft)
     export NETWORK_SIZE="medium"
+    export RAFT=true
     COMPOSE_FILES="-f compose-raft/compose.yaml -f compose-raft/docker/docker-compose.yaml"
     FABRIC_CFG_PATH=${PWD}/configtx-raft
     infoln "Using MEDIUM-RAFT network"
