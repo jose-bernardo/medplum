@@ -3,8 +3,6 @@
 . ./scripts/util.sh
 
 export PATH=${PWD}/bin:$PATH
-export FABRIC_CFG_PATH=${PWD}/configtx
-export COMPOSE_FILES="-f compose/compose.yaml -f compose/docker/docker-compose.yaml"
 export DOCKER_SOCK="/var/run/docker.sock"
 
 function installPrereq() {
@@ -59,20 +57,10 @@ createOrgs() {
 
   infoln "Generating certificates using cryptogen tool"
 
-  infoln "Creating Org1 Identities"
+  infoln "Creating Org Identities"
 
   set -x
-  cryptogen generate --config=./cryptogen/crypto-config-org1.yaml --output="organizations"
-  res=$?
-  { set +x; } 2>/dev/null
-  if [ $res -ne 0 ]; then
-    fatalln "Failed to generate certificates..."
-  fi
-
-  infoln "Creating Org2 Identities"
-
-  set -x
-  cryptogen generate --config=./cryptogen/crypto-config-org2.yaml --output="organizations"
+  cryptogen generate --config=./cryptogen/crypto-config-orgs.yaml --output="organizations"
   res=$?
   { set +x; } 2>/dev/null
   if [ $res -ne 0 ]; then
@@ -154,14 +142,37 @@ networkUp() {
   #  exit 1
   #fi
 }
-
 . ./scripts/envVar.sh
 
-if [ $# -ne 1 ]; then
-    echo "Error: Incorrect number of arguments."
-    display_help
-    exit 1
-fi
+#if [ $# -ne 0 ]; then
+#    echo "Error: Incorrect number of arguments."
+#    display_help
+#    exit 1
+#fi
+
+case $2 in
+  medium)
+    export NETWORK_SIZE="medium"
+    COMPOSE_FILES="-f compose/compose-medium.yaml -f compose/docker/docker-compose-medium.yaml"
+    FABRIC_CFG_PATH=${PWD}/configtx-medium
+    infoln "Using MEDIUM network"
+    ;;
+  large)
+    export NETWORK_SIZE="large"
+    COMPOSE_FILES="-f compose/compose-large.yaml -f compose/docker/docker-compose-large.yaml"
+    FABRIC_CFG_PATH=${PWD}/configtx-large
+    infoln "Using LARGE network"
+    ;;
+  *)
+    export NETWORK_SIZE="small"
+    COMPOSE_FILES="-f compose/compose.yaml -f compose/docker/docker-compose.yaml"
+    FABRIC_CFG_PATH=${PWD}/configtx
+    infoln "Using SMALL network"
+    ;;
+esac
+
+export COMPOSE_FILES
+export FABRIC_CFG_PATH
 
 case $1 in
   up)

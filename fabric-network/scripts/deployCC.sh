@@ -135,13 +135,35 @@ function initLedger() {
   setGlobals $ORG
 
   set -x
-  peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
-    --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-    -C mychannel -n medsky \
-    --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
-    --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-    -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
-  res=$?
+  if [[ $NETWORK_SIZE = "medium" ]]; then
+    peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
+      --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+      -C mychannel -n medsky \
+      --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
+      -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
+    res=$?
+  elif [[ $NETWORK_SIZE = "large" ]]; then
+    peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
+      --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+      -C mychannel -n medsky \
+      --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8401 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt" \
+      --peerAddresses localhost:8501 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org5.example.com/peers/peer0.org5.example.com/tls/ca.crt" \
+      -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
+      res=$?
+  else
+   peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
+     --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+     -C mychannel -n medsky \
+     --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+     --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+     -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
+     res=$?
+  fi
   { set +x; } 2>/dev/null
 
   verifyResult $res "InitLedger failed"
@@ -152,39 +174,82 @@ infoln "Install chaincode on peer0.org1..."
 installChaincode 1
 infoln "Install chaincode on peer0.org2..."
 installChaincode 2
-#infoln "Install chaincode on peer0.org3..."
-#installChaincode 3
-
+infoln "Install chaincode on peer0.org3..."
+installChaincode 3
+approveForMyOrg 1
+approveForMyOrg 2
+approveForMyOrg 3
 queryInstalled 1
 
-approveForMyOrg 1
+if [[ $NETWORK_SIZE = "small" ]]; then
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+  commitChaincodeDefinition 1 2 3
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+fi
 
-#checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": false"
-#checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": false"
-#checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": false" "\"Org3MSP\": false"
+if [[ $NETWORK_SIZE = "medium" ]]; then
+  infoln "Install chaincode on peer0.org4..."
+  installChaincode 4
+  infoln "Install chaincode on peer0.org5..."
+  installChaincode 5
+  approveForMyOrg 4
+  approveForMyOrg 5
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
+  checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
+  checkCommitReadiness 5 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
+  commitChaincodeDefinition 1 2 3 4 5
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+  queryCommitted 4
+  queryCommitted 5
+fi
 
-approveForMyOrg 2
-
-#checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true"
-#checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true"
-#checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": false"
-
-#approveForMyOrg 3
-
-#checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-#checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-#checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-
-#commitChaincodeDefinition 1 2 3
-commitChaincodeDefinition 1 2
-
-queryCommitted 1
-queryCommitted 2
-#queryCommitted 3
+if [[ $NETWORK_SIZE = "large" ]]; then
+  infoln "Install chaincode on peer0.org4..."
+  installChaincode 4
+  infoln "Install chaincode on peer0.org5..."
+  installChaincode 5
+  infoln "Install chaincode on peer0.org6..."
+  installChaincode 6
+  infoln "Install chaincode on peer0.org7..."
+  installChaincode 7
+  infoln "Install chaincode on peer0.org8..."
+  installChaincode 8
+  infoln "Install chaincode on peer0.org9..."
+  installChaincode 9
+  approveForMyOrg 4
+  approveForMyOrg 5
+  approveForMyOrg 6
+  approveForMyOrg 7
+  approveForMyOrg 8
+  approveForMyOrg 9
+  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 5 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 6 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 7 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 8 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  checkCommitReadiness 9 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
+  commitChaincodeDefinition 1 2 3 4 5 6 7 8 9
+  queryCommitted 1
+  queryCommitted 2
+  queryCommitted 3
+  queryCommitted 4
+  queryCommitted 5
+  queryCommitted 6
+  queryCommitted 7
+  queryCommitted 8
+  queryCommitted 9
+fi
 
 initLedger 1 "medium"
 

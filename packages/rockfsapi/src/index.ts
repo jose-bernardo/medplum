@@ -29,6 +29,12 @@ app.get('/', (_req: Request, res: Response) => {
 
 app.get('/download/:filename/:version', async (_req: Request, res: Response) => {
 
+  _req.on('aborted', () => {
+  });
+
+  res.on('close', () => {
+  });
+
   const filename = _req.params.filename;
   const version = _req.params.version;
   const filepath = resolve(syncDirPath, filename + '.' + version);
@@ -42,6 +48,12 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 
 app.post('/upload', async (req: Request, res: Response) => {
   const binarySource: Readable | string = req;
+
+  req.on('aborted', () => {
+  });
+
+  res.on('close', () => {
+  });
 
   const record = await gateway.readRecord((req.query.key as string).split('/')[0]);
   if (record === undefined) {
