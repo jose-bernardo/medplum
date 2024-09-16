@@ -32,6 +32,8 @@ Organizations:
         Rule: "OR('OrdererMSP.admin')"
     OrdererEndpoints:
       - orderer.example.com:7011
+      - orderer2.example.com:7021
+      - orderer3.example.com:7031
   - &Org1
     # DefaultOrg defines the organization which is used in the sampleconfig
     # of the fabric.git development environment
@@ -247,6 +249,8 @@ Orderer: &OrdererDefaults
   # to include the OrdererEndpoints item in your org definition
   Addresses:
     - orderer.example.com:7011
+    - orderer2.example.com:7021
+    - orderer3.example.com:7031
   # Batch Timeout: The amount of time to wait before creating a batch
   BatchTimeout: 2s
   # Batch Size: Controls the number of messages batched into a block
