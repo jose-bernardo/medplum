@@ -8,8 +8,12 @@ createChannelGenesisBlock() {
   fi
 	set -x
 
-	configtxgen -profile ChannelUsingBFT -outputBlock ./channel-artifacts/${CHANNEL_NAME}.block -channelID $CHANNEL_NAME
-	#configtxgen -profile ChannelUsingRaft -outputBlock ./channel-artifacts/${CHANNEL_NAME}.block -channelID $CHANNEL_NAME
+  if $RAFT; then
+	  configtxgen -profile ChannelUsingRaft -outputBlock ./channel-artifacts/${CHANNEL_NAME}.block -channelID $CHANNEL_NAME
+	else
+	  configtxgen -profile ChannelUsingBFT -outputBlock ./channel-artifacts/${CHANNEL_NAME}.block -channelID $CHANNEL_NAME
+	fi
+
 	res=$?
 	{ set +x; } 2>/dev/null
 	verifyResult $res "Failed to generate channel configuration transaction..."
