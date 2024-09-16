@@ -29,9 +29,11 @@ createChannel() {
 		set -x
 
 		./orderers-scripts/orderer.sh
-		./orderers-scripts/orderer2.sh
-		./orderers-scripts/orderer3.sh
-		./orderers-scripts/orderer4.sh
+		if ! $RAFT; then
+		  ./orderers-scripts/orderer2.sh
+		  ./orderers-scripts/orderer3.sh
+		  ./orderers-scripts/orderer4.sh
+		fi
 
 		res=$?
 		{ set +x; } 2>/dev/null
