@@ -7,6 +7,9 @@ volumes:
 
   peer0.org1.example.com:
   peer0.org2.example.com:
+  peer0.org3.example.com:
+  peer0.org4.example.com:
+  peer0.org5.example.com:
 networks:
   test:
     name: fabric_network
