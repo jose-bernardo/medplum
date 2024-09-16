@@ -85,7 +85,7 @@ services:
       - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
       - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
       - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7022
-      - ORDERER_OPERATIONS_LISTENADDRESS=orderer.example.com:7023
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer2.example.com:7023
       - ORDERER_METRICS_PROVIDER=prometheus
     working_dir: /root
     command: orderer
