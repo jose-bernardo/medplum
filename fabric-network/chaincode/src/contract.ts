@@ -23,10 +23,10 @@ export class MedskyContract extends Contract {
         hash = '30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58';
         break;
       case ('medium'):
-        hash = '20492a4d0d84f8beb1767f6616229f85d44c2827b64bdbfb260ee12fa1109e0e';
+        hash = 'e5b844cc57f57094ea4585e235f36c78c1cd222262bb89d53c94dcb4d6b3e55d';
         break;
       case ('large'):
-        hash = '49bc20df15e412a64472421e13fe86ff1c5165e18b2afccf160d4dc19fe68a14';
+        hash = '8565a714dca840f8652c5bae9249ab05f5fb5a4f9f13fbe23304b10f68252da2';
         break;
       default:
         hash = '30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58';
