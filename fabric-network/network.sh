@@ -4,6 +4,7 @@
 
 export PATH=${PWD}/bin:$PATH
 export DOCKER_SOCK="/var/run/docker.sock"
+export RAFT=false
 
 function installPrereq() {
   infoln "Installing Fabric 3.0.0-beta..."
