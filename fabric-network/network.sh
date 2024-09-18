@@ -53,8 +53,10 @@ display_help() {
 }
 
 createOrgs() {
-  rm -Rf organizations/peerOrganizations && rm -Rf organizations/ordererOrganizations
-  rm -Rf ../packages/server/organizations && rm -Rf ../packages/rockfsapi/organizations
+  if [ -d "./organizations" ]; then
+    rm -Rf ./organizations
+    rm -Rf ../packages/server/organizations && rm -Rf ../packages/rockfsapi/organizations
+  fi
 
   infoln "Generating certificates using cryptogen tool"
 
@@ -194,7 +196,9 @@ case $1 in
     ;;
   setup)
     #checkPrereq
-    createOrgs
+    if [ ! -d "organizations" ]; then
+        createOrgs
+      fi
     networkUp
     . ./scripts/create-channel.sh
     ;;

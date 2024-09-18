@@ -27,7 +27,7 @@ export interface MedplumServerConfig {
   database: MedplumDatabaseConfig;
   databaseProxyEndpoint?: string;
   redis: MedplumRedisConfig;
-  fabric: MedplumFabricConfig;
+  fabric: MedplumFabricConfig[];
   emailProvider?: 'none' | 'awsses' | 'smtp';
   smtp?: MedplumSmtpConfig;
   bullmq?: MedplumBullmqConfig;
