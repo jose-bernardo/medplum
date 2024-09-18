@@ -2,7 +2,7 @@ import { FabricGateway } from '@medplum/fabric-gateway';
 import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
 
-let gateways: FabricGateway[];
+const gateways: FabricGateway[] = [];
 
 export function getFabricGateway(): FabricGateway {
   const idx = Math.floor(Math.random() * gateways.length);
