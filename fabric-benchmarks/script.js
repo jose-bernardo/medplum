@@ -32,13 +32,13 @@ export default function() {
     sleep(Math.random() * 150);
     const recordId = recordIds[randomIdx];
     const actionId = actionIds[randomIdx];
-    let get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    let get = http.get(url + `/fhir/R4/Binary/${recordId}?actionId=${actionId}`, params)
     console.log(get.status);
-    get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    get = http.get(url + `/fhir/R4/Binary/${recordId}?actionId=${actionId}`, params)
     console.log(get.status);
     let res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, payload, params);
     console.log(res.status);
-    get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    get = http.get(url + `/fhir/R4/Binary/${recordId}?actionId=${actionId}`, params)
     console.log(get.status);
 }
 
