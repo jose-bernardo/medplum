@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export const options = {
-  vus: 50,
-  duration: '60s',
+  vus: 900,
+  duration: '10m',
 };
 
 const url = 'http://10.100.0.12:5555';
@@ -22,17 +22,24 @@ const params = {
 
 export function setup() {
     for (let i = 0; i < recordIds.length; i++) {
-        http.post(url + `/fhir/R4/Binary?recordId=${recordIds[i]}&actionId=${actionIds[i]}`, payload, params);
+        const res = http.post(url + `/fhir/R4/Binary?recordId=${recordIds[i]}&actionId=${actionIds[i]}`, payload, params);
+        console.log(res);
     }
 }
 
 export default function() {
-  const randomIdx = Math.floor(Math.random() * recordIds.length);
-  sleep(Math.random() * 5);
-  const recordId = recordIds[randomIdx];
-  const actionId = actionIds[randomIdx];
-  const res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, payload, params);
-  console.log(res);
+    const randomIdx = Math.floor(Math.random() * recordIds.length);
+    sleep(Math.random() * 150);
+    const recordId = recordIds[randomIdx];
+    const actionId = actionIds[randomIdx];
+    let get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    console.log(get.status);
+    get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    console.log(get.status);
+    let res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, payload, params);
+    console.log(res.status);
+    get = http.get(url + `/fhir/R4/Binary/${recordId}?${actionId}`, params)
+    console.log(get.status);
 }
 
 /*
