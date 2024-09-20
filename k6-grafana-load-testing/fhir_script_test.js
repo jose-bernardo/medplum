@@ -22,17 +22,14 @@ const params = {
   }
 }
 
-const records = []
-for (let i = 1; i < SAMPLES_N; i++) {
-    records.push(JSON.parse(open(samplesDir + '/' + (i + 1) + '.json')))
-}
+const recordi = JSON.parse(open('fhir-samples/2.json'));
 
 export default function() {
     const fhirIdx = Math.floor(Math.random() * SAMPLES_N);
     const recordId = uuidv4();
     const actionId = uuidv4();
 
-    const fhirRecord = records[fhirIdx];
+    const fhirRecord = recordi;
     fhirRecord.id = recordId;
     const resourceType = fhirRecord.resourceType;
 
