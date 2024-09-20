@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export K6DIR=${PWD}
 cd ../fabric-network
 
 export FABRIC_CFG_PATH=${PWD}/configtx-large
@@ -12,7 +11,7 @@ ORG=$((RANDOM % 9 + 1))
 
 RECORD_ID=$1
 ACTION_ID=$2
-HASH=$(sha256sum $K6DIR/$3 | awk '{print($1)}')
+HASH=$3
 
 setGlobals $ORG
 

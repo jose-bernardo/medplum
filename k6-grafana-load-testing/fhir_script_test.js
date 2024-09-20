@@ -2,6 +2,7 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 import exec from 'k6/x/exec';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import crypto from 'k6/crypto';
 
 export const options = {
   vus: 1,
@@ -31,13 +32,18 @@ export default function() {
     const recordId = uuidv4();
     const actionId = uuidv4();
 
+    const fhirRecord = records[fhirIdx];
+    fhirRecord.id = recordId;
+    const resourceType = fhirRecord.resourceType;
+
+    const hash = crypto.sha256(JSON.stringify(fhirRecord), 'hex');
+
     const command = 'bash'
-    const args = ['./invoke.sh', recordId, actionId, samplesDir + '/' + (fhirIdx + 1) + '.json'];
+    const args = ['./invoke.sh', recordId, actionId, hash];
 
     console.log(exec.command(command, args));
 
-    const fhirRecord = records[fhirIdx];
-    const resourceType = fhirRecord.resourceType;
+    sleep(1);
 
     let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(fhirRecord), params);
     console.log(res.status);
