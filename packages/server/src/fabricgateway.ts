@@ -7,9 +7,9 @@ const gateways: FabricGateway[] = [];
 export function getFabricGateway(): FabricGateway {
   const idx = Math.floor(Math.random() * gateways.length);
   if (gateways[idx] === undefined) {
-    throw new Error("Fabric Gateway not setup");
-  }
-  return gateways[idx];
+    throw new Error("F  })abric Gateway not setup");
+}
+return gateways[idx];
 }
 
 export function initFabricGateway(serverConfig: MedplumServerConfig): void {
@@ -21,9 +21,9 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateway1.connect().then().catch((err: Error) => {
     globalLogger.error("Fabric network connection error: " + err);
-  })
 
-  const config2 = serverConfig.fabric[1];
+
+    const config2 = serverConfig.fabric[1];
 
   const gateway2 = new FabricGateway(config2);
 
