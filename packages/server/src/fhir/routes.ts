@@ -300,7 +300,7 @@ protectedRoutes.use(
       pathname: req.originalUrl.replace('/fhir/R4', '').split('?').shift() as string,
       params: req.params,
       query: req.query as Record<string, string>,
-      body: req.body.resource,
+      body: req.body,
       headers: req.headers,
     };
 
@@ -330,7 +330,7 @@ protectedRoutes.use(
         if (request.body.id === undefined) {
           throw new OperationOutcomeError(badRequest('Resource without id'));
         }
-        const actionId = req.body.actionId;
+        const actionId = req.query.actionId;
         if (actionId === undefined) {
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
