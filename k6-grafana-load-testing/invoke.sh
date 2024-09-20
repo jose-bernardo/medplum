@@ -1,6 +1,7 @@
 #!/bin/bash
 
-pushd ../fabric-network
+export K6DIR=${PWD}
+cd ../fabric-network
 
 export FABRIC_CFG_PATH=${PWD}/configtx-large
 export PATH=${PWD}/bin:$PATH
@@ -11,7 +12,7 @@ ORG=$((RANDOM % 9 + 1))
 
 RECORD_ID=$1
 ACTION_ID=$2
-HASH=$(sha256sum $3 | awk '{print($1)}')
+HASH=$(sha256sum $K6DIR/$3 | awk '{print($1)}')
 
 setGlobals $ORG
 
@@ -26,4 +27,4 @@ peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.exa
      --peerAddresses localhost:8601 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org6.example.com/peers/peer0.org6.example.com/tls/ca.crt" \
      -c "{\"function\":\"CreateRecord\",\"Args\":[\"$RECORD_ID\", \"$HASH\", \"$ACTION_ID\"]}"
 
-popd
+cd -

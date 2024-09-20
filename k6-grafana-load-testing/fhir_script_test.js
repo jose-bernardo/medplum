@@ -27,19 +27,19 @@ for (let i = 1; i < SAMPLES_N; i++) {
 }
 
 export default function() {
-    const fhirIdx = Math.floor(Math.random() * SAMPLES_N + 1);
+    const fhirIdx = Math.floor(Math.random() * SAMPLES_N);
     const recordId = uuidv4();
     const actionId = uuidv4();
 
     const command = 'bash'
-    const args = ['./invoke.sh', recordId, actionId, samplesDir + '/' + fhirIdx + '.json'];
+    const args = ['./invoke.sh', recordId, actionId, samplesDir + '/' + (fhirIdx + 1) + '.json'];
 
     console.log(exec.command(command, args));
 
     const fhirRecord = records[fhirIdx];
     const resourceType = fhirRecord.resourceType;
 
-    let res = http.post(url + `/fhir/R4/${resourceType}?recordId=${recordId}&actionId=${actionId}`, fhirRecord, params);
+    let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(fhirRecord), params);
     console.log(res.status);
 }
 
