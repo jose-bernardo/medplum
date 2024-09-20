@@ -31,11 +31,12 @@ export default function() {
     const recordId = uuidv4();
     const actionId = uuidv4();
 
-    const command = 'sh'
+    const command = 'bash'
     const args = ['./invoke.sh', recordId, actionId, samplesDir + '/' + fhirIdx + '.json'];
 
     console.log(exec.command(command, args));
 
+    const fhirRecord = records[fhirIdx];
     const resourceType = fhirRecord.resourceType;
 
     let res = http.post(url + `/fhir/R4/${resourceType}?recordId=${recordId}&actionId=${actionId}`, fhirRecord, params);
