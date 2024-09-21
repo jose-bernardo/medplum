@@ -10,39 +10,58 @@ export const options = {
 };
 
 const url = 'http://10.100.0.12:5555';
-const token = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImIzOWI0MTI2LWRlZGEtNDFiYi05ZmFjLTgxODhmZjNjMWZmYiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiJtZWRwbHVtLWNsaSIsImxvZ2luX2lkIjoiYmJmZWQxYmMtNzg0Yi00N2Y4LTgzOGMtZjVjYmQ0MmQ0MTc4Iiwic3ViIjoiNzMxYmQ1NzktOGY2My00MGI4LTgwMWYtNDk4MWExNGZiNDVjIiwidXNlcm5hbWUiOiI3MzFiZDU3OS04ZjYzLTQwYjgtODAxZi00OTgxYTE0ZmI0NWMiLCJzY29wZSI6Im9wZW5pZCIsInByb2ZpbGUiOiJQcmFjdGl0aW9uZXIvM2RjODZhZDktZTE5YS00Y2QxLWIyMzItODdkODJiNjM0ZDM4IiwiaWF0IjoxNzI2NjU5NjgyLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjU1NTUvIiwiYXVkIjoibWVkcGx1bS1jbGkiLCJleHAiOjE3MjY2NjMyODJ9.mGAJyA6mOQ4MZmHPWDExeFXhvX0CuwwVVDe9zJuowrcS2essueHrmyWDtzdxme-is-3CV50JweE5u2qm-n_LFeGL_HkhO4J7uJnbWTLGTLu4OGeLS5sCxn1lJd1ii8Z87s801Ru9U2tF-JkgFNKc0Q0wavsmcJ5OUhgpLt8O2q0j2JIgv9enkNEX8lcTTtHNOLzMFsGWYNsyp1RfRbqrpBBaIsPx0WAuRfAeVXotiXL1AN8CS6P-pl7f3VXN5nwN0BXB6EYa82UrW80NGUYNl58jfgtn-KuUuSisEyC56L08_Ao1sJrVmYq6aHTTA6SeF0DXrdsgjj2g5Lxva6WSzQ';
+const token = '';
 
 const SAMPLES_N = 12
 const samplesDir = 'fhir-samples'
 
-const params = {
+const fhirParams = {
   headers: {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + token
   }
 }
 
-const recordi = JSON.parse(open('fhir-samples/2.json'));
 
-export default function() {
-    const fhirIdx = Math.floor(Math.random() * SAMPLES_N);
-    const recordId = uuidv4();
-    const actionId = uuidv4();
+const binaryParams = {
+  headers: {
+    'Content-Type': 'multipart/form-data',
+    'Authorization': 'Bearer ' + token
+  }
+}
 
-    const fhirRecord = recordi;
-    fhirRecord.id = recordId;
-    const resourceType = fhirRecord.resourceType;
+const record = JSON.parse(open('fhir-samples/fhir.json'));
+const recordHash = crypto.sha256(JSON.stringify(fhirRecord), 'hex');
+const binary = open('fhir-samples/binary.dat');
+const binaryHash = crypto.sha256(binary, 'hex');
 
-    const hash = crypto.sha256(JSON.stringify(fhirRecord), 'hex');
-
+function invokeChaincode(recordId, actionId, hash) {
     const command = 'bash'
     const args = ['./invoke.sh', recordId, actionId, hash];
 
     console.log(exec.command(command, args));
+}
 
-    sleep(1);
+export default function() {
+    const recordId = uuidv4();
+    const actionId = uuidv4();
 
-    let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(fhirRecord), params);
+    if (Math.random() > 2) {
+        fhirRecord.id = recordId;
+        const resourceType = fhirRecord.resourceType;
+
+        invokeChaincode(recordId, actionId, recordHash);
+
+        sleep(1);
+
+        let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(record), fhirParams);
+    } else {
+        invokeChaincode(recordId, actionId, binaryHash);
+
+        sleep(1);
+
+        let res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, binary, binaryParams);
+    }
     console.log(res.status);
 }
 
