@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, Gateway, Identity, Proposal, Signer, signers, Status } from '@hyperledger/fabric-gateway';
+import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 
@@ -120,6 +120,7 @@ export class FabricGateway {
     }
   }
 
+  /*
   async readRecordTx(resourceId: string, actionId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
@@ -162,6 +163,7 @@ export class FabricGateway {
 
     return result;
   }
+  */
 
   async close(): Promise<void> {
     if (this.client && this.gateway) {
@@ -170,6 +172,7 @@ export class FabricGateway {
     }
   }
 
+  /*
   async submitTransaction(unsignedProposal: Proposal): Promise<Status> {
     if (this.signer === undefined) {
       throw Error('signer not defined');
@@ -208,4 +211,5 @@ export class FabricGateway {
 
     return status;
   }
+  */
 }
