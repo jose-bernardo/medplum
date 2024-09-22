@@ -106,12 +106,14 @@ function read() {
 }
 
 function setup() {
-
-    const resourceHashes = Array(900).fill(recordHash);
-    const binaryHashes = Array(100).fill(binaryHash);
-
-    invokeWriteCC(JSON.stringify(resourceIds), resourceActionId, JSON.stringify(resourceHashes));
-    invokeWriteCC(JSON.stringify(binaryIds), binaryActionId, JSON.stringify(binaryHashes));
+    for (let i = 0; i < resourceIds.length; i++) {
+        const actionId = uuidv4();
+        invokeWriteCC(resourceIds[i], actionId, resourceHash);
+    }
+    for (let i = 0; i < binaryIds.length; i++) {
+        const actionId = uuidv4();
+        invokeWriteCC(binaryIds[i], actionId, binaryHash);
+    }
 
     sleep(1);
 
