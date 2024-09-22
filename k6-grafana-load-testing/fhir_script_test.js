@@ -34,9 +34,9 @@ const binaryHash = crypto.sha256(binary, 'hex');
 const generatedRecordIds = [];
 const resourceType = record.resourceType;
 
-const resourceIds = Array.from({ length: 900 }, () => uuidv4());
+const resourceIds = Array.from({ length: 90 }, () => uuidv4());
 const resourceActionId = uuidv4();
-const binaryIds = Array.from({ length: 100}, () => uuidv4());
+const binaryIds = Array.from({ length: 10}, () => uuidv4());
 const binaryActionId = uuidv4();
 
 function invokeWriteCC(recordId, actionId, hash) {
@@ -88,7 +88,7 @@ function read() {
 
         sleep(1);
 
-        const res = http.get(url + `/fhir/R4/${resourceType}/${resourceIds[idx]}?actionId=${actionId}`);
+        const res = http.get(url + `/fhir/R4/${resourceType}/${resourceIds[idx]}?actionId=${actionId}`, fhirParams);
         console.log(res.status);
     } else {
         const idx = Math.floor(Math.random() * binaryIds.length);
@@ -97,23 +97,12 @@ function read() {
 
         sleep(1);
 
-        const res = http.get(url + `/fhir/R4/Binary/${binaryIds[idx]}?actionId=${actionId}`);
+        const res = http.get(url + `/fhir/R4/Binary/${binaryIds[idx]}?actionId=${actionId}`, binaryParams);
         console.log(res.status);
     }
 }
 
-function setup() {
-    for (let i = 0; i < resourceIds.length; i++) {
-        const actionId = uuidv4();
-        invokeWriteCC(resourceIds[i], actionId, resourceHash);
-    }
-    for (let i = 0; i < binaryIds.length; i++) {
-        const actionId = uuidv4();
-        invokeWriteCC(binaryIds[i], actionId, binaryHash);
-    }
-
-    sleep(1);
-
+export function setup() {
     resourceIds.forEach(_ => {
         let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${resourceActionId}`, JSON.stringify(record), fhirParams);
         console.log(res.status);
@@ -123,6 +112,17 @@ function setup() {
         let res = http.post(url + `/fhir/R4/Binary?recordId=${binaryId}&actionId=${binaryActionId}`, binary, binaryParams);
         console.log(res.status);
     });
+
+    sleep(2);
+
+    for (let i = 0; i < resourceIds.length; i++) {
+        const actionId = uuidv4();
+        invokeWriteCC(resourceIds[i], actionId, recordHash);
+    }
+    for (let i = 0; i < binaryIds.length; i++) {
+        const actionId = uuidv4();
+        invokeWriteCC(binaryIds[i], actionId, binaryHash);
+    }
 }
 
 export default function() {
