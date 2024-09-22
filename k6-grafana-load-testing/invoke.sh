@@ -24,7 +24,7 @@ if [ -z "$3" ]; then
      --peerAddresses peer0.org3.example.com:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
      -c "{\"function\":\"ReadRecordTx\",\"Args\":[\"$RECORD_ID\", \"$ACTION_ID\"]}"
 else
-    peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
+    peer chaincode invoke -o orderer.example.com:7011 --ordererTLSHostnameOverride orderer.example.com \
      --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
      -C mychannel -n medsky \
      --peerAddresses peer0.org1.example.com:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
