@@ -12,9 +12,6 @@ export const options = {
 const url = 'http://10.100.0.12:5555';
 const token = '';
 
-const SAMPLES_N = 12
-const samplesDir = 'fhir-samples'
-
 const fhirParams = {
   headers: {
     'Content-Type': 'application/json',
@@ -31,7 +28,7 @@ const binaryParams = {
 }
 
 const record = JSON.parse(open('fhir-samples/fhir.json'));
-const recordHash = crypto.sha256(JSON.stringify(fhirRecord), 'hex');
+const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
 const binary = open('fhir-samples/binary.dat');
 const binaryHash = crypto.sha256(binary, 'hex');
 const generatedRecordIds = [];
@@ -63,7 +60,7 @@ function write() {
     generatedRecordIds.push(recordId)
 
     if (Math.random() > 0.2) {
-        fhirRecord.id = recordId;
+        record.id = recordId;
 
         invokeWriteCC(recordId, actionId, recordHash);
 
