@@ -3,6 +3,7 @@ import { sleep } from 'k6';
 import exec from 'k6/x/exec';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
+import { SharedArray } from 'k6/data';
 
 export const options = {
   vus: 1,
@@ -30,11 +31,10 @@ const binaryParams = {
 const record = JSON.parse(open('fhir-samples/fhir.json'));
 const binary = open('fhir-samples/binary.dat');
 const binaryHash = crypto.sha256(binary, 'hex');
-const generatedRecordIds = [];
 const resourceType = record.resourceType;
 
-const resourceIds = Array.from({ length: 2 }, () => uuidv4());
-const binaryIds = Array.from({ length: 1}, () => uuidv4());
+const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 2 }, () => uuidv4()));
+const binaryIds = new SharedArray('binary ids', () => Array.from({ length: 1}, () => uuidv4()));
 
 function invokeWriteCC(recordId, actionId, hash) {
     const command = 'bash'
@@ -53,8 +53,6 @@ function invokeReadCC(recordId, actionId) {
 function write() {
     const recordId = uuidv4();
     const actionId = uuidv4();
-
-    generatedRecordIds.push(recordId)
 
     if (Math.random() > 0.2) {
         record.id = recordId;
