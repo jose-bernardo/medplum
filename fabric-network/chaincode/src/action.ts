@@ -9,7 +9,7 @@ export class Action {
   public Requestor: string = '';
 
   @Property()
-  public RecordID: string = '';
+  public RecordIDs: string[] = [];
 
   @Property()
   public Timestamp?: number = Date.now();
