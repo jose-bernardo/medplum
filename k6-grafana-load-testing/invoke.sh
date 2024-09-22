@@ -7,7 +7,7 @@ export PATH=${PWD}/bin:$PATH
 . scripts/envVar.sh
 . scripts/util.sh
 
-ORG=$((RANDOM % 9 + 1))
+ORG=$((RANDOM % 3 + 1))
 
 RECORD_ID=$1
 ACTION_ID=$2
