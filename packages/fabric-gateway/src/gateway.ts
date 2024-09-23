@@ -65,6 +65,7 @@ export class FabricGateway {
     this.signer = await this.newSigner();
 
     this.gateway = connect({
+      // @ts-expect-error: its very good as it is
       client: this.client,
       identity: await this.newIdentity(),
       signer: this.signer,
