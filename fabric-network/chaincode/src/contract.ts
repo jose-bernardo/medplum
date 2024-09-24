@@ -52,12 +52,6 @@ export class MedskyContract extends Contract {
   @Returns('string')
   public async ReadRecordsTx(ctx: Context, recordIds: string[], actionId: string): Promise<string> {
     const records = [];
-    let recordIdsArray: string[];
-    if (typeof recordIds === 'string') {
-        recordIdsArray = [recordIds];
-    } else {
-        recordIdsArray = recordIds;
-    }
 
     for (const recordId of recordIds) {
       const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
@@ -67,7 +61,7 @@ export class MedskyContract extends Contract {
       records.push(recordJSON);
     }
 
-    await this.LogAction(ctx, recordIdsArray, actionId);
+    await this.LogAction(ctx, recordIds, actionId);
 
     return records.toString();
   }
