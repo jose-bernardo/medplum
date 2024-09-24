@@ -3,10 +3,10 @@ import { sleep } from 'k6';
 import exec from 'k6/x/exec';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { SharedArray } from 'k6/data';
+import {  SharedArray } from 'k6/data';
 
 export const options = {
-  vus: 1,
+  vus: 150,
   duration: '10m',
 };
 
@@ -33,8 +33,8 @@ const binary = open('fhir-samples/binary.dat');
 const binaryHash = crypto.sha256(binary, 'hex');
 const resourceType = record.resourceType;
 
-const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 2 }, () => uuidv4()));
-const binaryIds = new SharedArray('binary ids', () => Array.from({ length: 1}, () => uuidv4()));
+const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 45 }, () => uuidv4()));
+const binaryIds = new SharedArray('binary ids', () => Array.from({ length: 5}, () => uuidv4()));
 
 function invokeWriteCC(recordId, actionId, hash) {
     const command = 'bash'
@@ -59,14 +59,14 @@ function write() {
         const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
         invokeWriteCC(recordId, actionId, recordHash);
 
-        sleep(1);
+        sleep(5);
 
         let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(record), fhirParams);
         console.log(res.status);
     } else {
         invokeWriteCC(recordId, actionId, binaryHash);
 
-        sleep(1);
+        sleep(5);
 
         let res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, binary, binaryParams);
         console.log(res.status);
@@ -81,7 +81,7 @@ function read() {
 
         invokeReadCC(resourceIds[idx], actionId);
 
-        sleep(1);
+        sleep(5);
 
         const res = http.get(url + `/fhir/R4/${resourceType}/${resourceIds[idx]}?actionId=${actionId}`, fhirParams);
         console.log(res.status);
@@ -90,7 +90,7 @@ function read() {
 
         invokeReadCC(binaryIds[idx], actionId);
 
-        sleep(1);
+        sleep(5);
 
         const res = http.get(url + `/fhir/R4/Binary/${binaryIds[idx]}?actionId=${actionId}`, binaryParams);
         console.log(res.status);
@@ -104,7 +104,7 @@ export function setup() {
         const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
         invokeWriteCC(resourceIds[i], actionId, recordHash);
 
-        sleep(0.1);
+        sleep(0.2);
 
         let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(record), fhirParams);
         console.log(res.status);
@@ -114,7 +114,7 @@ export function setup() {
         const actionId = uuidv4();
         invokeWriteCC(binaryIds[i], actionId, binaryHash);
 
-        sleep(0.1);
+        sleep(0.2);
 
         let res = http.post(url + `/fhir/R4/Binary?recordId=${binaryIds[i]}&actionId=${actionId}`, binary, binaryParams);
         console.log(res.status);

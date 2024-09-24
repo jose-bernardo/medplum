@@ -251,8 +251,6 @@ if [[ $NETWORK_SIZE = "large" ]]; then
   queryCommitted 9
 fi
 
-initLedger 1 "medium"
-
 rm log.txt
 
 successln "Chaincode ${CC_NAME} successful installed on all peers"
