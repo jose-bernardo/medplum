@@ -50,10 +50,10 @@ export class MedskyContract extends Contract {
 
   @Transaction()
   @Returns('string')
-  public async ReadRecordTx(ctx: Context, recordIds: string[] | string, actionId: string): Promise<string> {
-    let records = [];
+  public async ReadRecordsTx(ctx: Context, recordIds: string[], actionId: string): Promise<string> {
+    const records = [];
     let recordIdsArray: string[];
-    if (typeof recordIds == 'string') {
+    if (typeof recordIds === 'string') {
         recordIdsArray = [recordIds];
     } else {
         recordIdsArray = recordIds;
@@ -72,6 +72,19 @@ export class MedskyContract extends Contract {
     return records.toString();
   }
 
+  @Transaction()
+  @Returns('string')
+  public async ReadRecordTx(ctx: Context, recordId: string, actionId: string): Promise<string> {
+    const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
+    if (recordJSON.length === 0) {
+      throw new Error(`The record ${recordId} does not exist`);
+    }
+
+    await this.LogAction(ctx, [recordId], actionId);
+
+    return recordJSON.toString();
+  }
+
   @Transaction(false)
   @Returns('string')
   public async ReadRecord(ctx: Context, recordId: string): Promise<string> {
@@ -84,34 +97,35 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction()
-  public async CreateRecord(ctx: Context, recordIds: string[] | string, hashes: string[] | string, actionId: string): Promise<void> {
-    let recordIdsArray: string[];
-    let hashesArray: string[];
-    if (typeof recordIds == 'string' && typeof hashes == 'string') {
-        recordIdsArray = [recordIds];
-        hashesArray = [hashes];
-    } else if (Array.isArray(recordIds) && Array.isArray(hashes)){
-        recordIdsArray = recordIds;
-        hashesArray = hashes;
-    } else {
-        throw new Error(`recordIds and hashes have different types`);
-    }
-
+  public async CreateRecords(ctx: Context, recordIds: string[], hashes: string[], actionId: string): Promise<void> {
     if (recordIds.length !== hashes.length) {
       throw new Error(`The number of record ids is different from the number of hashes`);
     }
 
-    for (let i = 0; i < recordIdsArray.length; i++) {
+    for (let i = 0; i < recordIds.length; i++) {
 
       const record: Record = {
         From: ctx.stub.getCreator().idBytes.toString(),
-        Hash: hashesArray[i]
+        Hash: hashes[i]
       };
+
+      await this.LogAction(ctx, recordIds, actionId);
 
       await ctx.stub.putState(recordIds[i], Buffer.from(stringify(sortKeysRecursive(record))));
     }
+  }
 
-    await this.LogAction(ctx, recordIdsArray, actionId);
+  @Transaction()
+  public async CreateRecord(ctx: Context, recordId: string, hash: string, actionId: string): Promise<void> {
+
+    const record: Record = {
+      From: ctx.stub.getCreator().idBytes.toString(),
+      Hash: hash
+    };
+
+    await ctx.stub.putState(recordId, Buffer.from(stringify(sortKeysRecursive(record))));
+
+    await this.LogAction(ctx, [recordId], actionId);
   }
 
   @Transaction()
