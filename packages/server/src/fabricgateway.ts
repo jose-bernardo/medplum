@@ -98,15 +98,17 @@ async function verifyLedger(): Promise<void> {
   let len = newRecords.length;
 
   let freshLen = freshNewRecords.length;
-  for (let i = 0; i < freshLen; i++) {
-    newRecords.push(freshNewRecords.splice(0, 1)[0]);
-  }
+  newRecords.push(...freshNewRecords.splice(0, freshLen));
 
   let i = 0;
   while (i < len) {
     const newRecord= newRecords.shift();
     if (newRecord !== undefined) {
-      await verifyWrite(newRecord);
+      try {
+        await verifyWrite(newRecord);
+      } catch (err) {
+        wrongNewRecords.push(newRecord);
+      }
     }
     i++;
   }
@@ -114,15 +116,17 @@ async function verifyLedger(): Promise<void> {
   len = accesses.length;
 
   freshLen = freshAccesses.length;
-  for (let i = 0; i < freshLen; i++) {
-    newRecords.push(freshNewRecords.splice(0, 1)[0]);
-  }
+  newRecords.push(...freshNewRecords.splice(0, freshLen));
 
   i = 0;
   while (i < len) {
     const newAccess = accesses.shift();
     if (newAccess !== undefined) {
-      await verifyRead(newAccess);
+      try {
+        await verifyRead(newAccess);
+      } catch (err) {
+        wrongNewRecords.push(newAccess);
+      }
     }
     i++;
   }
@@ -130,6 +134,7 @@ async function verifyLedger(): Promise<void> {
   const content = wrongAccesses.join('\n') + wrongNewRecords.join('\n');
   await fs.appendFile('blacklist.txt', content);
   wrongAccesses.length = 0;
+  wrongNewRecords.length = 0;
 }
 
 async function verifyWrite(newRecord: NewRecord): Promise<void>  {
