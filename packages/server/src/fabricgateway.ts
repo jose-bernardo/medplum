@@ -3,13 +3,43 @@ import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
 
 const gateways: FabricGateway[] = [];
+const newRecords: NewRecord[] = [];
+const accesses: Access[] = [];
+const wrongAccesses: NewRecord[] = [];
+const wrongNewRecords: Access[] = []
 
-export function getFabricGateway(): FabricGateway {
+interface NewRecord {
+  recordId: string
+  actionId: string
+  hash: string
+}
+
+interface Access {
+  actionId: string
+}
+
+function getFabricGateway(): FabricGateway {
   const idx = Math.floor(Math.random() * gateways.length);
   if (gateways[idx] === undefined) {
     throw new Error("Fabric Gateway not setup");
   }
   return gateways[idx];
+}
+
+export function appendNewRecord(recordId: string): void {
+  newRecords.push(recordId);
+  if (newRecords.length > 100) {
+    console.log('Many writes, verifying writes...')
+    verifyLedger();
+  }
+}
+
+export function appendNewAccess(access: string): void {
+  accesses.push(access);
+  if (accesses.length > 100) {
+    console.log('Many reads, verifying reads...')
+    verifyLedger();
+  }
 }
 
 export function initFabricGateway(serverConfig: MedplumServerConfig): void {
@@ -44,6 +74,8 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
   })
 
   gateways.push(gateway1, gateway2, gateway3);
+
+  setInterval(verifyLedger, 60000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -51,4 +83,53 @@ export async function closeFabricGateway(): Promise<void> {
     await gateways[i].close();
     gateways.splice(i, 1);
   }
+}
+
+function verifyLedger(): void {
+  let len = newRecords.length;
+  let i = 0;
+  while (i < len) {
+    const newRecord = newRecords.shift();
+    verifyWrite(newRecord);
+    i++;
+  }
+
+  len = accesses.length;
+  i = 0;
+  while (i < len) {
+    const newAccess = acceses.shift();
+    verifyRead(newAccess.actionId);
+    i++;
+  }
+}
+
+function verifyWrite(newRecord: NewRecord): void  {
+  const gateway = getFabricGateway();
+
+  const action = gateway.ReadAction(newRecord.actionId);
+  if (action === undefined) {
+    wrongNewRecords.push(newRecord)
+    throw new Error('Action could not be validated');
+  }
+
+  const record = gateway.ReadRecord(newRecord.recordId);
+  if (record === undefined) {
+    wrongNewRecords.push(newRecord)
+    throw new Error('Record could not be validated');
+  }
+  if (newRecord.hash !== record.Hash) {
+    wrongNewRecords.push(newRecord);
+    //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
+    throw new Error('Digest of data being stored does not match fabric network digest');
+  }
+}
+
+function verifyRead(access: Access): void {
+    const action = getFabricGateway().ReadAction(access.actionId);
+    if (action === undefined) {
+      wrongAccesses.push(access);
+      throw new Error('Action not validated, adding to blacklist');
+    }
+
+    console.log(action);
 }

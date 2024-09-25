@@ -40,13 +40,7 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { createHash } from 'crypto';
-import { getFabricGateway } from '../fabricgateway';
-
-const sha256 = (resource: string): string => {
-  return createHash('sha256')
-    .update(resource)
-    .digest('hex');
-}
+import { appendNewRecord, appendNewAccess } from '../fabricgateway';
 
 export const fhirRouter = Router();
 
@@ -313,10 +307,8 @@ protectedRoutes.use(
         if (actionId === undefined) {
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
-        const actionLog = await getFabricGateway().readAction(actionId);
-        if (actionLog === undefined) {
-          throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
-        }
+
+        appendNewAccess({actionId: actionId});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
@@ -334,18 +326,16 @@ protectedRoutes.use(
         if (actionId === undefined) {
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
-        const actionLog = await getFabricGateway().readAction(actionId);
-        if (actionLog === undefined) {
-          throw new OperationOutcomeError(badRequest('Request action is not recognized by the fabric network'));
-        }
 
-        const record = await getFabricGateway().readRecord(request.body.id);
-        const recordData = request.body;
-        if (record.Hash !== sha256(JSON.stringify(recordData))) {
-          throw new OperationOutcomeError(badRequest('Digest of data being stored does not match fabric network digest'));
+        const sha256 = (resource: string): string => {
+          return createHash('sha256')
+            .update(resource)
+            .digest('hex');
         }
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+
+        appendNewRecord({recordId: request.body.id, actionId: actionId, hash: sha256(result)});
       }
     } else {
       result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
