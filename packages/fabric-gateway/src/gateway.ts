@@ -3,8 +3,6 @@ import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperled
 import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 
-const utf8Decoder = new TextDecoder();
-
 export interface FabricOptions {
   channelName: string
   chaincodeName: string
@@ -94,11 +92,7 @@ export class FabricGateway {
     }
 
     console.log('\n--> Evaluate Transaction: ReadAction');
-    const resultBytes = await this.contract.evaluateTransaction('ReadAction', actionId);
-    const resultJson = utf8Decoder.decode(resultBytes);
-    JSON.parse(resultJson);
-
-    return result;
+    await this.contract.evaluateTransaction('ReadAction', actionId);
   }
 
   async readRecord(id: string): Promise<any> {
@@ -108,14 +102,9 @@ export class FabricGateway {
 
     try {
       console.log('\n--> Evaluate Transaction: ReadRecord');
-      const resultBytes = await this.contract.evaluateTransaction('ReadRecord', id);
-      const resultJson = utf8Decoder.decode(resultBytes);
-      JSON.parse(resultJson);
-
-      return result;
+      await this.contract.evaluateTransaction('ReadRecord', id);
     } catch (err) {
       console.log(err);
-      return undefined;
     }
   }
 

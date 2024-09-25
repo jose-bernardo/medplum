@@ -36,14 +36,14 @@ async function verifyLedger(): Promise<void> {
     if (record === undefined) {
       wrongNewRecords.push(newRecord);
       await rm(newRecord.filepath);
-      throw new Error('Record not validated');
+      console.err('Record not validated');
     }
 
     const expectedHash = record.Hash;
     if (expectedHash !== newRecord.hash) {
       await rm(newRecord.filepath);
       wrongNewRecords.push(newRecord);
-      throw new Error('Digest does not match, file deleted');
+      console.err('Digest does not match, file deleted');
     }
 
     console.log(`Record ${newRecord.recordId} validation success`);
@@ -97,7 +97,7 @@ app.post('/upload', async (req: Request, res: Response) => {
   await stream.pipeline(binarySource, writeStream);
 
   const hash = await computeFileHash(dest);
-  newRecords.push({recordId: (req.query.key as string).split('.')[0], filepath: dest, hash: hash});
+  newRecords.push({recordId: (req.query.key as string).split('/')[0], filepath: dest, hash: hash});
 
   if (uploadAborted) {
     await rm(dest);

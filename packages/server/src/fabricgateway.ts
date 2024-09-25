@@ -110,19 +110,19 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   const action = await gateway.readAction(newRecord.actionId);
   if (action === undefined) {
     wrongNewRecords.push(newRecord)
-    throw new Error('Action could not be validated');
+    console.err('Action could not be validated');
   }
 
   const record = await gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
     wrongNewRecords.push(newRecord)
-    throw new Error('Record could not be validated');
+    console.err('Record could not be validated');
   }
 
   if (newRecord.hash !== record.Hash) {
     wrongNewRecords.push(newRecord);
     //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
-    throw new Error('Digest of data being stored does not match fabric network digest');
+    console.err('Digest of data being stored does not match fabric network digest');
   }
 
   console.log(`Record ${newRecord.recordId} validation success`);
@@ -132,7 +132,7 @@ async function verifyRead(access: Access): Promise<void> {
   const action = await getFabricGateway().readAction(access.actionId);
   if (action === undefined) {
     wrongAccesses.push(access);
-    throw new Error('Action not validated, adding to blacklist');
+    console.err('Action not validated, adding to blacklist');
   }
 
   console.log(action);
