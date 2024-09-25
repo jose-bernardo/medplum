@@ -308,7 +308,7 @@ protectedRoutes.use(
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
 
-        appendNewAccess({actionId: actionId});
+        appendNewAccess({actionId: actionId as string});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
@@ -335,7 +335,7 @@ protectedRoutes.use(
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
-        appendNewRecord({recordId: request.body.id, actionId: actionId, hash: sha256(result)});
+        appendNewRecord({recordId: request.body.id, actionId: actionId as string, hash: sha256(JSON.stringify(result[1]))});
       }
     } else {
       result = await getInternalFhirRouter().handleRequest(request, ctx.repo);

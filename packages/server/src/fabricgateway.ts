@@ -5,8 +5,8 @@ import { globalLogger } from './logger';
 const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
 const accesses: Access[] = [];
-const wrongAccesses: NewRecord[] = [];
-const wrongNewRecords: Access[] = []
+const wrongAccesses: Access[] = [];
+const wrongNewRecords: NewRecord[] = [];
 
 interface NewRecord {
   recordId: string
@@ -89,16 +89,20 @@ function verifyLedger(): void {
   let len = newRecords.length;
   let i = 0;
   while (i < len) {
-    const newRecord = newRecords.shift();
-    verifyWrite(newRecord);
+    const newRecord= newRecords.shift();
+    if (newRecord !== undefined) {
+      verifyWrite(newRecord);
+    }
     i++;
   }
 
   len = accesses.length;
   i = 0;
   while (i < len) {
-    const newAccess = acceses.shift();
-    verifyRead(newAccess.actionId);
+    const newAccess = accesses.shift();
+    if (newAccess !== undefined) {
+      verifyRead(newAccess);
+    }
     i++;
   }
 }
