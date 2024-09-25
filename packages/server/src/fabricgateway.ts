@@ -95,6 +95,7 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
+  console.log('Reviewing requests');
   let len = newRecords.length;
 
   let freshLen = freshNewRecords.length;
@@ -107,6 +108,7 @@ async function verifyLedger(): Promise<void> {
       try {
         await verifyWrite(newRecord);
       } catch (err) {
+        console.error(err);
         wrongNewRecords.push(newRecord);
       }
     }
@@ -125,13 +127,15 @@ async function verifyLedger(): Promise<void> {
       try {
         await verifyRead(newAccess);
       } catch (err) {
-        wrongNewRecords.push(newAccess);
+        console.error(err);
+        wrongAccesses.push(newAccess);
       }
     }
     i++;
   }
 
-  const content = wrongAccesses.join('\n') + wrongNewRecords.join('\n');
+  const content = wrongAccesses.map(e => JSON.stringify(e)).join('\n')
+    + wrongNewRecords.map(e => JSON.stringify(e)).join('\n');
   await fs.appendFile('blacklist.txt', content);
   wrongAccesses.length = 0;
   wrongNewRecords.length = 0;
