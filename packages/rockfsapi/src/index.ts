@@ -7,7 +7,6 @@ import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
 import {Readable} from "node:stream";
 import { rm } from 'fs/promises'
-import {getFabricGateway} from "@medplum/server/src/fabricgateway";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
@@ -17,11 +16,10 @@ const wrongNewRecords: NewRecord[] = [];
 interface NewRecord {
   recordId: string
   filepath: string
-  actionId: string
   hash: string
 }
 
-async function computeFileHash(filePath: string): Promise<boolean> {
+async function computeFileHash(filePath: string): Promise<string> {
   const hash = createHash('sha256');
   const binary = createReadStream(filePath, { highWaterMark: 2 * 1024 * 1024 });
   await stream.pipeline(binary, hash);
@@ -29,20 +27,21 @@ async function computeFileHash(filePath: string): Promise<boolean> {
   return hash.digest('hex');
 }
 
-function verifyLedger(): void {
+async function verifyLedger(): Promise<void> {
   const len = newRecords.length;
   let i = 0;
   while (i < len) {
     const newRecord = newRecords.shift();
-    const record = getFabricGateway().ReadRecord(newRecord.recordId);
+    const record = gateway.ReadRecord(newRecord.recordId);
     if (record === undefined) {
       wrongNewRecords.push(newRecord);
+      await rm(newRecord.filepath);
       throw new Error('Record not validated');
     }
 
     const expectedHash = record.Hash;
     if (expectedHash !== newRecord.hash) {
-      await rm(dest);
+      await rm(newRecord.filepath);
       wrongNewRecords.push(newRecord);
       throw new Error('Digest does not match, file deleted');
     }
@@ -97,8 +96,8 @@ app.post('/upload', async (req: Request, res: Response) => {
   const writeStream = createWriteStream(dest);
   await stream.pipeline(binarySource, writeStream);
 
-  const hash = computeFileHash(dest);
-  newRecords.push({recordId: req.query.key.split('.')[0], filepath: dest, actionId: actionId, hash: hash});
+  const hash = await computeFileHash(dest);
+  newRecords.push({recordId: (req.query.key as string).split('.')[0], filepath: dest, hash: hash});
 
   if (uploadAborted) {
     await rm(dest);
