@@ -138,5 +138,5 @@ function verifyRead(access: Access): void {
   }
 
   console.log(action);
-  console.log(`Access ${newRecord.actionId} validation success`);
+  console.log(`Access ${access.actionId} validation success`);
 }
