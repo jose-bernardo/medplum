@@ -1,6 +1,7 @@
 import { FabricGateway } from '@medplum/fabric-gateway';
 import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
+import fs from "fs/promises";
 
 const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
@@ -67,7 +68,7 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 60000);
+  setInterval(verifyLedger, 10000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -97,6 +98,10 @@ async function verifyLedger(): Promise<void> {
     }
     i++;
   }
+
+  const content = wrongAccesses.join('\n');
+  await fs.appendFile('blacklist.txt', content);
+  wrongAccesses.length = 0;
 }
 
 async function verifyWrite(newRecord: NewRecord): Promise<void>  {
