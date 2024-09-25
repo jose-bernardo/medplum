@@ -33,10 +33,18 @@ export function getFabricGateway(): FabricGateway {
 
 export function appendNewRecord(recordId: NewRecord): void {
   freshNewRecords.push(recordId);
+
+  if (freshNewRecords.length > 100) {
+    newRecords.slice(0, 100).forEach(newRecord, () => verifyWrite(newRecord).catch(err => console.log(err)));
+  }
 }
 
 export function appendNewAccess(access: Access): void {
   freshAccesses.push(access);
+
+  if (accesses.length > 100) {
+    accesses.slice(0, 100).forEach(access, () => verifyWrite(access).catch(err => console.log(err)));
+  }
 }
 
 export function initFabricGateway(serverConfig: MedplumServerConfig): void {
@@ -72,7 +80,7 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 10000);
+  setInterval(verifyLedger, 60000);
 }
 
 export async function closeFabricGateway(): Promise<void> {

@@ -80,7 +80,7 @@ app.get('/download/:filename/:version', async (_req: Request, res: Response) => 
 
   res.download(filepath, err => {
     if (err) {
-      res.status(404).send('File not found.');
+      console.error(err);
     }
   });
 })
