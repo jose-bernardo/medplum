@@ -28,18 +28,10 @@ export function getFabricGateway(): FabricGateway {
 
 export function appendNewRecord(recordId: NewRecord): void {
   newRecords.push(recordId);
-  if (newRecords.length > 100) {
-    console.log('Many writes, verifying writes...')
-    verifyLedger();
-  }
 }
 
 export function appendNewAccess(access: Access): void {
   accesses.push(access);
-  if (accesses.length > 100) {
-    console.log('Many reads, verifying reads...')
-    verifyLedger();
-  }
 }
 
 export function initFabricGateway(serverConfig: MedplumServerConfig): void {
