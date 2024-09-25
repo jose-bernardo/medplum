@@ -32,7 +32,7 @@ async function verifyLedger(): Promise<void> {
   let i = 0;
   while (i < len) {
     const newRecord = newRecords.shift();
-    const record = gateway.ReadRecord(newRecord.recordId);
+    const record = gateway.readRecord(newRecord.recordId);
     if (record === undefined) {
       wrongNewRecords.push(newRecord);
       await rm(newRecord.filepath);

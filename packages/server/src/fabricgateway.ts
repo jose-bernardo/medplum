@@ -102,13 +102,13 @@ function verifyLedger(): void {
 function verifyWrite(newRecord: NewRecord): void  {
   const gateway = getFabricGateway();
 
-  const action = gateway.ReadAction(newRecord.actionId);
+  const action = gateway.readAction(newRecord.actionId);
   if (action === undefined) {
     wrongNewRecords.push(newRecord)
     throw new Error('Action could not be validated');
   }
 
-  const record = gateway.ReadRecord(newRecord.recordId);
+  const record = gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
     wrongNewRecords.push(newRecord)
     throw new Error('Record could not be validated');
@@ -123,7 +123,7 @@ function verifyWrite(newRecord: NewRecord): void  {
 }
 
 function verifyRead(access: Access): void {
-  const action = getFabricGateway().ReadAction(access.actionId);
+  const action = getFabricGateway().readAction(access.actionId);
   if (action === undefined) {
     wrongAccesses.push(access);
     throw new Error('Action not validated, adding to blacklist');
