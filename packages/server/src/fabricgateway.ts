@@ -101,7 +101,7 @@ async function verifyLedger(): Promise<void> {
 
   len = accesses.length;
 
-  freshLen = freshAcceses.length;
+  freshLen = freshAccesses.length;
   for (let i = 0; i < freshLen; i++) {
     newRecords.push(freshNewRecords.splice(0, 1)[0]);
   }

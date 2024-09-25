@@ -57,15 +57,6 @@ async function verifyLedger(): Promise<void> {
     console.log(`Record ${newRecord.recordId} validation success`);
     i++;
   }
-
-  let i = 0;
-  while (i < len) {
-    const newRecord= newRecords.shift();
-    if (newRecord !== undefined) {
-      await verifyWrite(newRecord);
-    }
-    i++;
-  }
 }
 
 const app = express();
