@@ -43,7 +43,7 @@ export function appendNewAccess(access: Access): void {
   freshAccesses.push(access);
 
   if (accesses.length > 100) {
-    accesses.slice(0, 100).forEach(access, () => verifyWrite(access).catch(err => console.log(err)));
+    accesses.slice(0, 100).forEach(access, () => verifyRead(access).catch(err => console.log(err)));
   }
 }
 
