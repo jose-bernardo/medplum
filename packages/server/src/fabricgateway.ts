@@ -35,7 +35,7 @@ export function appendNewRecord(recordId: NewRecord): void {
   freshNewRecords.push(recordId);
 
   if (freshNewRecords.length > 100) {
-    newRecords.slice(0, 100).forEach(newRecord, () => verifyWrite(newRecord).catch(err => console.log(err)));
+    newRecords.slice(0, 100).forEach(newRecord => verifyWrite(newRecord).catch(err => console.log(err)));
   }
 }
 
@@ -43,7 +43,7 @@ export function appendNewAccess(access: Access): void {
   freshAccesses.push(access);
 
   if (accesses.length > 100) {
-    accesses.slice(0, 100).forEach(acc, () => verifyRead(acc).catch(err => console.log(err)));
+    accesses.slice(0, 100).forEach(acc => verifyRead(acc).catch(err => console.log(err)));
   }
 }
 
