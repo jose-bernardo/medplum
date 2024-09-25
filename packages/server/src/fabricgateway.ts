@@ -5,9 +5,13 @@ import fs from "fs/promises";
 
 const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
-const accesses: Access[] = [];
-const wrongAccesses: Access[] = [];
+const freshNewRecords: NewRecord[] = [];
 const wrongNewRecords: NewRecord[] = [];
+const accesses: Access[] = [];
+const freshAccesses: Access[] = [];
+const wrongAccesses: Access[] = [];
+
+
 
 interface NewRecord {
   recordId: string
@@ -28,11 +32,11 @@ export function getFabricGateway(): FabricGateway {
 }
 
 export function appendNewRecord(recordId: NewRecord): void {
-  newRecords.push(recordId);
+  freshNewRecords.push(recordId);
 }
 
 export function appendNewAccess(access: Access): void {
-  accesses.push(access);
+  freshAccesses.push(access);
 }
 
 export function initFabricGateway(serverConfig: MedplumServerConfig): void {
@@ -80,6 +84,12 @@ export async function closeFabricGateway(): Promise<void> {
 
 async function verifyLedger(): Promise<void> {
   let len = newRecords.length;
+
+  let freshLen = freshNewRecords.length;
+  for (let i = 0; i < freshLen; i++) {
+    newRecords.push(freshNewRecords.splice(0, 1)[0]);
+  }
+
   let i = 0;
   while (i < len) {
     const newRecord= newRecords.shift();
@@ -90,6 +100,12 @@ async function verifyLedger(): Promise<void> {
   }
 
   len = accesses.length;
+
+  freshLen = freshAcceses.length;
+  for (let i = 0; i < freshLen; i++) {
+    newRecords.push(freshNewRecords.splice(0, 1)[0]);
+  }
+
   i = 0;
   while (i < len) {
     const newAccess = accesses.shift();

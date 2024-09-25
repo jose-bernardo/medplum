@@ -11,6 +11,7 @@ import { rm } from 'fs/promises'
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
 const newRecords: NewRecord[] = [];
+const freshNewRecords: NewRecord[] = [];
 const wrongNewRecords: NewRecord[] = [];
 
 interface NewRecord {
@@ -28,7 +29,14 @@ async function computeFileHash(filePath: string): Promise<string> {
 }
 
 async function verifyLedger(): Promise<void> {
+
   const len = newRecords.length;
+
+  const freshLen = freshNewRecords.length;
+  for (let i = 0; i < freshLen; i++) {
+    newRecords.push(freshNewRecords.splice(0, 1)[0]);
+  }
+
   let i = 0;
   while (i < len) {
     const newRecord = newRecords.shift();
@@ -49,6 +57,15 @@ async function verifyLedger(): Promise<void> {
     console.log(`Record ${newRecord.recordId} validation success`);
     i++;
   }
+
+  let i = 0;
+  while (i < len) {
+    const newRecord= newRecords.shift();
+    if (newRecord !== undefined) {
+      await verifyWrite(newRecord);
+    }
+    i++;
+  }
 }
 
 const app = express();
@@ -64,9 +81,6 @@ app.get('/', (_req: Request, res: Response) => {
 app.get('/download/:filename/:version', async (_req: Request, res: Response) => {
 
   _req.on('aborted', () => {
-  });
-
-  res.on('close', () => {
   });
 
   const filename = _req.params.filename;
@@ -87,10 +101,6 @@ app.post('/upload', async (req: Request, res: Response) => {
   req.on('aborted', () => {
     uploadAborted = true;
   });
-
-  res.on('close', () => {
-  });
-
 
   const dest = resolve(syncDirPath, (req.query.key as string).replace('/', '.'));
   const writeStream = createWriteStream(dest);

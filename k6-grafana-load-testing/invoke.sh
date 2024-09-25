@@ -22,6 +22,8 @@ if [ -z "$3" ]; then
      --peerAddresses peer0.org1.example.com:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
      --peerAddresses peer0.org2.example.com:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
      --peerAddresses peer0.org3.example.com:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
+     --peerAddresses peer0.org4.example.com:8401 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt" \
+     --peerAddresses peer0.org5.example.com:8501 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org5.example.com/peers/peer0.org5.example.com/tls/ca.crt" \
      -c "{\"function\":\"ReadRecordTx\",\"Args\":[\"$RECORD_ID\", \"$ACTION_ID\"]}"
 else
     peer chaincode invoke -o orderer.example.com:7011 --ordererTLSHostnameOverride orderer.example.com \
@@ -30,6 +32,8 @@ else
      --peerAddresses peer0.org1.example.com:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
      --peerAddresses peer0.org2.example.com:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
      --peerAddresses peer0.org3.example.com:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
+     --peerAddresses peer0.org4.example.com:8401 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt" \
+     --peerAddresses peer0.org5.example.com:8501 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org5.example.com/peers/peer0.org5.example.com/tls/ca.crt" \
      -c "{\"function\":\"CreateRecord\",\"Args\":[\"$RECORD_ID\", \"$HASH\", \"$ACTION_ID\"]}"
 fi
 
