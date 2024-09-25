@@ -50,27 +50,27 @@
       "keyPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk",
       "certPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem",
       "tlsCertPath": "organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt",
-      "peerEndpoint": "10.100.0.12:8101",
+      "peerEndpoint": "10.15.0.11:8101",
       "peerHostAlias": "peer0.org1.example.com"
     },
     {
       "channelName": "mychannel",
       "chaincodeName": "medsky",
       "mspId": "Org2MSP",
-      "keyPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk",
-      "certPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem",
-      "tlsCertPath": "organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt",
-      "peerEndpoint": "10.100.0.12:8201",
+      "keyPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/keystore/priv_sk",
+      "certPath": "organizations/peerOrganizations/org2.example.com/users/User1@org2.example.com/msp/signcerts/User1@org2.example.com-cert.pem",
+      "tlsCertPath": "organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt",
+      "peerEndpoint": "10.15.0.11:8201",
       "peerHostAlias": "peer0.org2.example.com"
     },
     {
       "channelName": "mychannel",
       "chaincodeName": "medsky",
       "mspId": "Org3MSP",
-      "keyPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk",
-      "certPath": "organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem",
-      "tlsCertPath": "organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt",
-      "peerEndpoint": "10.100.0.12:8301",
+      "keyPath": "organizations/peerOrganizations/org3.example.com/users/User1@org3.example.com/msp/keystore/priv_sk",
+      "certPath": "organizations/peerOrganizations/org3.example.com/users/User1@org3.example.com/msp/signcerts/User1@org3.example.com-cert.pem",
+      "tlsCertPath": "organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt",
+      "peerEndpoint": "10.15.0.11:8301",
       "peerHostAlias": "peer0.org3.example.com"
     }
   ],

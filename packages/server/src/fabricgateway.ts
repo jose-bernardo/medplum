@@ -18,7 +18,7 @@ interface Access {
   actionId: string
 }
 
-function getFabricGateway(): FabricGateway {
+export function getFabricGateway(): FabricGateway {
   const idx = Math.floor(Math.random() * gateways.length);
   if (gateways[idx] === undefined) {
     throw new Error("Fabric Gateway not setup");
@@ -26,7 +26,7 @@ function getFabricGateway(): FabricGateway {
   return gateways[idx];
 }
 
-export function appendNewRecord(recordId: string): void {
+export function appendNewRecord(recordId: NewRecord): void {
   newRecords.push(recordId);
   if (newRecords.length > 100) {
     console.log('Many writes, verifying writes...')
@@ -34,7 +34,7 @@ export function appendNewRecord(recordId: string): void {
   }
 }
 
-export function appendNewAccess(access: string): void {
+export function appendNewAccess(access: Access): void {
   accesses.push(access);
   if (accesses.length > 100) {
     console.log('Many reads, verifying reads...')

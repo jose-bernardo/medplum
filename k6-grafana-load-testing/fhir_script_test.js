@@ -1,5 +1,4 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
 import exec from 'k6/x/exec';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
@@ -10,7 +9,7 @@ export const options = {
   duration: '10m',
 };
 
-const url = 'http://10.100.0.12:5555';
+const url = 'http://10.15.0.11:5555';
 const token = '';
 
 const fhirParams = {
@@ -59,14 +58,10 @@ function write() {
         const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
         invokeWriteCC(recordId, actionId, recordHash);
 
-        sleep(5);
-
         let res = http.post(url + `/fhir/R4/${resourceType}?actionId=${actionId}`, JSON.stringify(record), fhirParams);
         console.log(res.status);
     } else {
         invokeWriteCC(recordId, actionId, binaryHash);
-
-        sleep(5);
 
         let res = http.post(url + `/fhir/R4/Binary?recordId=${recordId}&actionId=${actionId}`, binary, binaryParams);
         console.log(res.status);
