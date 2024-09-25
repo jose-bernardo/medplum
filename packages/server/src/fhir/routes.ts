@@ -335,7 +335,7 @@ protectedRoutes.use(
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
-        appendNewRecord({recordId: request.body.id, actionId: actionId as string, hash: sha256(JSON.stringify(result[1]))});
+        appendNewRecord({recordId: request.body.id, actionId: actionId as string, hash: sha256(JSON.stringify(request.body))});
       }
     } else {
       result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
