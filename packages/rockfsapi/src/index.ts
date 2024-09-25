@@ -45,6 +45,7 @@ async function verifyLedger(): Promise<void> {
       wrongNewRecords.push(newRecord);
       await rm(newRecord.filepath);
       console.error('Record not validated');
+      return;
     }
 
     const expectedHash = record.Hash;

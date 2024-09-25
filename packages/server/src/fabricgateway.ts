@@ -34,16 +34,16 @@ export function getFabricGateway(): FabricGateway {
 export function appendNewRecord(recordId: NewRecord): void {
   freshNewRecords.push(recordId);
 
-  if (freshNewRecords.length > 100) {
-    newRecords.slice(0, 100).forEach(newRecord => verifyWrite(newRecord).catch(err => console.log(err)));
+  if (freshNewRecords.length > 1000) {
+    newRecords.splice(0, 1000).forEach(newRecord => verifyWrite(newRecord).catch(err => console.log(err)));
   }
 }
 
 export function appendNewAccess(access: Access): void {
   freshAccesses.push(access);
 
-  if (accesses.length > 100) {
-    accesses.slice(0, 100).forEach(acc => verifyRead(acc).catch(err => console.log(err)));
+  if (accesses.length > 1000) {
+    accesses.splice(0, 1000).forEach(acc => verifyRead(acc).catch(err => console.log(err)));
   }
 }
 
@@ -123,7 +123,7 @@ async function verifyLedger(): Promise<void> {
     i++;
   }
 
-  const content = wrongAccesses.join('\n');
+  const content = wrongAccesses.join('\n') + wrongNewRecords.join('\n');
   await fs.appendFile('blacklist.txt', content);
   wrongAccesses.length = 0;
 }
@@ -135,18 +135,21 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   if (action === undefined) {
     wrongNewRecords.push(newRecord)
     console.error('Action could not be validated');
+    return;
   }
 
   const record = await gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
     wrongNewRecords.push(newRecord)
     console.error('Record could not be validated');
+    return;
   }
 
   if (newRecord.hash !== record.Hash) {
     wrongNewRecords.push(newRecord);
     //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
     console.error('Digest of data being stored does not match fabric network digest');
+    return;
   }
 
   console.log(`Record ${newRecord.recordId} validation success`);
@@ -157,6 +160,7 @@ async function verifyRead(access: Access): Promise<void> {
   if (action === undefined) {
     wrongAccesses.push(access);
     console.error('Action not validated, adding to blacklist');
+    return;
   }
 
   console.log(action);
