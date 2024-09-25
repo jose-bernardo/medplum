@@ -36,14 +36,14 @@ async function verifyLedger(): Promise<void> {
     if (record === undefined) {
       wrongNewRecords.push(newRecord);
       await rm(newRecord.filepath);
-      console.err('Record not validated');
+      console.error('Record not validated');
     }
 
     const expectedHash = record.Hash;
     if (expectedHash !== newRecord.hash) {
       await rm(newRecord.filepath);
       wrongNewRecords.push(newRecord);
-      console.err('Digest does not match, file deleted');
+      console.error('Digest does not match, file deleted');
     }
 
     console.log(`Record ${newRecord.recordId} validation success`);
