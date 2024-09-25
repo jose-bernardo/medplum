@@ -126,14 +126,17 @@ function verifyWrite(newRecord: NewRecord): void  {
     //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
     throw new Error('Digest of data being stored does not match fabric network digest');
   }
+
+  console.log(`Record ${newRecord.recordId} validation success`);
 }
 
 function verifyRead(access: Access): void {
-    const action = getFabricGateway().ReadAction(access.actionId);
-    if (action === undefined) {
-      wrongAccesses.push(access);
-      throw new Error('Action not validated, adding to blacklist');
-    }
+  const action = getFabricGateway().ReadAction(access.actionId);
+  if (action === undefined) {
+    wrongAccesses.push(access);
+    throw new Error('Action not validated, adding to blacklist');
+  }
 
-    console.log(action);
+  console.log(action);
+  console.log(`Access ${newRecord.actionId} validation success`);
 }

@@ -7,21 +7,56 @@ import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
 import {Readable} from "node:stream";
 import { rm } from 'fs/promises'
+import {getFabricGateway} from "@medplum/server/src/fabricgateway";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
+const newRecords: NewRecord[] = [];
+const wrongNewRecords: NewRecord[] = [];
 
-async function verifyFileHash(filePath: string, expectedHash: string): Promise<boolean> {
+interface NewRecord {
+  recordId: string
+  filepath: string
+  actionId: string
+  hash: string
+}
+
+async function computeFileHash(filePath: string): Promise<boolean> {
   const hash = createHash('sha256');
   const binary = createReadStream(filePath, { highWaterMark: 2 * 1024 * 1024 });
   await stream.pipeline(binary, hash);
 
-  return hash.digest('hex') === expectedHash;
+  return hash.digest('hex');
+}
+
+function verifyLedger(): void {
+  const len = newRecords.length;
+  let i = 0;
+  while (i < len) {
+    const newRecord = newRecords.shift();
+    const record = getFabricGateway().ReadRecord(newRecord.recordId);
+    if (record === undefined) {
+      wrongNewRecords.push(newRecord);
+      throw new Error('Record not validated');
+    }
+
+    const expectedHash = record.Hash;
+    if (expectedHash !== newRecord.hash) {
+      await rm(dest);
+      wrongNewRecords.push(newRecord);
+      throw new Error('Digest does not match, file deleted');
+    }
+
+    console.log(`Record ${newRecord.recordId} validation success`);
+    i++;
+  }
 }
 
 const app = express();
 const gateway = new FabricGateway(config.fabric);
 gateway.connect();
+
+setInterval(verifyLedger, 60000);
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);
@@ -57,29 +92,19 @@ app.post('/upload', async (req: Request, res: Response) => {
   res.on('close', () => {
   });
 
-  const record = await gateway.readRecord((req.query.key as string).split('/')[0]);
-  if (record === undefined) {
-    res.status(200).send('Request not recorded on the Fabric network.');
-    return;
-  }
-  const expectedHash = record.Hash;
 
   const dest = resolve(syncDirPath, (req.query.key as string).replace('/', '.'));
   const writeStream = createWriteStream(dest);
   await stream.pipeline(binarySource, writeStream);
 
+  const hash = computeFileHash(dest);
+  newRecords.push({recordId: req.query.key.split('.')[0], filepath: dest, actionId: actionId, hash: hash});
+
   if (uploadAborted) {
     await rm(dest);
-    return;
   }
 
-  const isVerified = await verifyFileHash(dest, expectedHash);
-  if (isVerified) {
-    res.status(200).send(`File uploaded successfully: ${req.params.key}`);
-  } else {
-    await rm(dest)
-    res.status(400).send('File hash does not match');
-  }
+  res.status(200).send('Uploaded successfully');
 })
 
 app.listen(config.port, () => {

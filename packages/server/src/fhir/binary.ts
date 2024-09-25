@@ -9,7 +9,7 @@ import { authenticateRequest } from '../oauth/middleware';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
-import {getFabricGateway} from "../fabricgateway";
+import { appendNewAccess  } from "../fabricgateway";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -32,11 +32,7 @@ binaryRouter.get(
       return;
     }
 
-    const actionLog = await getFabricGateway().readAction(actionId);
-    if (actionLog === undefined) {
-      sendOutcome(res, badRequest('Request action is not recognized by the fabric network'));
-      return;
-    }
+    appendNewAccess({actionId: actionId});
 
     const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);
@@ -61,12 +57,6 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   }
 
   const contentType = req.get('Content-Type') as string;
-
-  const actionLog = await getFabricGateway().readAction(actionId);
-  if (actionLog === undefined) {
-    sendOutcome(res, badRequest('Request action is not recognized by the fabric network'));
-    return;
-  }
 
   const stream = getContentStream(req);
   if (!stream) {
