@@ -77,13 +77,13 @@ export async function closeFabricGateway(): Promise<void> {
   }
 }
 
-function verifyLedger(): void {
+async function verifyLedger(): Promise<void> {
   let len = newRecords.length;
   let i = 0;
   while (i < len) {
     const newRecord= newRecords.shift();
     if (newRecord !== undefined) {
-      verifyWrite(newRecord);
+      await verifyWrite(newRecord);
     }
     i++;
   }
@@ -93,26 +93,27 @@ function verifyLedger(): void {
   while (i < len) {
     const newAccess = accesses.shift();
     if (newAccess !== undefined) {
-      verifyRead(newAccess);
+      await verifyRead(newAccess);
     }
     i++;
   }
 }
 
-function verifyWrite(newRecord: NewRecord): void  {
+async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   const gateway = getFabricGateway();
 
-  const action = gateway.readAction(newRecord.actionId);
+  const action = await gateway.readAction(newRecord.actionId);
   if (action === undefined) {
     wrongNewRecords.push(newRecord)
     throw new Error('Action could not be validated');
   }
 
-  const record = gateway.readRecord(newRecord.recordId);
+  const record = await gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
     wrongNewRecords.push(newRecord)
     throw new Error('Record could not be validated');
   }
+
   if (newRecord.hash !== record.Hash) {
     wrongNewRecords.push(newRecord);
     //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
@@ -122,8 +123,8 @@ function verifyWrite(newRecord: NewRecord): void  {
   console.log(`Record ${newRecord.recordId} validation success`);
 }
 
-function verifyRead(access: Access): void {
-  const action = getFabricGateway().readAction(access.actionId);
+async function verifyRead(access: Access): Promise<void> {
+  const action = await getFabricGateway().readAction(access.actionId);
   if (action === undefined) {
     wrongAccesses.push(access);
     throw new Error('Action not validated, adding to blacklist');
