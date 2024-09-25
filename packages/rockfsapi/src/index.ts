@@ -64,7 +64,7 @@ const app = express();
 const gateway = new FabricGateway(config.fabric);
 gateway.connect();
 
-setInterval(verifyLedger, 60000);
+setInterval(verifyLedger, 120000);
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);
