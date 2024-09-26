@@ -7,9 +7,11 @@ import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
 import {Readable} from "node:stream";
 import { rm } from 'fs/promises'
+import {getFabricGateway} from "@medplum/server/src/fabricgateway";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
+
 const newRecords: NewRecord[] = [];
 const freshNewRecords: NewRecord[] = [];
 const wrongNewRecords: NewRecord[] = [];
@@ -28,35 +30,52 @@ async function computeFileHash(filePath: string): Promise<string> {
   return hash.digest('hex');
 }
 
+async function verifyWrite(newRecord: NewRecord): Promise<void>  {
+  const gateway = getFabricGateway();
+
+  /*
+  const action = await gateway.readAction(newRecord.actionId);
+  if (action === undefined) {
+    wrongNewRecords.push(newRecord)
+    console.error('Action could not be validated');
+    return;
+  }
+  */
+
+  const record = await gateway.readRecord(newRecord.recordId);
+  if (record === undefined) {
+    wrongNewRecords.push(newRecord);
+    await rm(newRecord.filepath);
+    console.error('Record could not be validated');
+    return;
+  }
+
+  const expectedHash = record.Hash;
+  if (expectedHash !== newRecord.hash) {
+    await rm(newRecord.filepath);
+    wrongNewRecords.push(newRecord);
+    console.error('Digest does not match, file deleted');
+  }
+
+  console.log(`Record ${newRecord.recordId} validation success`);
+}
+
 async function verifyLedger(): Promise<void> {
 
   const len = newRecords.length;
 
   const freshLen = freshNewRecords.length;
   for (let i = 0; i < freshLen; i++) {
-    newRecords.push(freshNewRecords.splice(0, 1)[0]);
+    newRecords.push(...freshNewRecords.splice(0, freshLen));
   }
 
-  let i = 0;
-  while (i < len) {
-    const newRecord = newRecords.shift();
-    const record = await gateway.readRecord(newRecord.recordId);
-    if (record === undefined) {
+  for (const newRecord of newRecords.splice(0, len)) {
+    try {
+      await verifyWrite(newRecord);
+    } catch (err) {
       wrongNewRecords.push(newRecord);
-      await rm(newRecord.filepath);
-      console.error('Record not validated');
-      return;
+      console.error(err);
     }
-
-    const expectedHash = record.Hash;
-    if (expectedHash !== newRecord.hash) {
-      await rm(newRecord.filepath);
-      wrongNewRecords.push(newRecord);
-      console.error('Digest does not match, file deleted');
-    }
-
-    console.log(`Record ${newRecord.recordId} validation success`);
-    i++;
   }
 }
 
@@ -64,7 +83,7 @@ const app = express();
 const gateway = new FabricGateway(config.fabric);
 gateway.connect();
 
-setInterval(verifyLedger, 120000);
+setInterval(verifyLedger, 20000);
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);

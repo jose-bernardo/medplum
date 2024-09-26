@@ -31,8 +31,8 @@ export function getFabricGateway(): FabricGateway {
   return gateways[idx];
 }
 
-export function appendNewRecord(recordId: NewRecord): void {
-  freshNewRecords.push(recordId);
+export function appendNewRecord(record: NewRecord): void {
+  freshNewRecords.push(record);
 
   /*
   if (freshNewRecords.length > 1000) {
@@ -84,7 +84,7 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 120000);
+  setInterval(verifyLedger, 20000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -96,42 +96,31 @@ export async function closeFabricGateway(): Promise<void> {
 
 async function verifyLedger(): Promise<void> {
   console.log('Reviewing requests');
-  let len = newRecords.length;
 
+  let len = newRecords.length;
   let freshLen = freshNewRecords.length;
   newRecords.push(...freshNewRecords.splice(0, freshLen));
 
-  let i = 0;
-  while (i < len) {
-    const newRecord= newRecords.shift();
-    if (newRecord !== undefined) {
-      try {
-        await verifyWrite(newRecord);
-      } catch (err) {
-        console.error(err);
-        wrongNewRecords.push(newRecord);
-      }
+  for (const newRecord of newRecords.splice(0, len)) {
+    try {
+      await verifyWrite(newRecord);
+    } catch (err) {
+      console.log(err);
+      wrongNewRecords.push(newRecord);
     }
-    i++;
   }
 
   len = accesses.length;
-
   freshLen = freshAccesses.length;
   newRecords.push(...freshNewRecords.splice(0, freshLen));
 
-  i = 0;
-  while (i < len) {
-    const newAccess = accesses.shift();
-    if (newAccess !== undefined) {
+  for (const newAccess of accesses.splice(0, len)) {
       try {
         await verifyRead(newAccess);
       } catch (err) {
         console.error(err);
         wrongAccesses.push(newAccess);
       }
-    }
-    i++;
   }
 
   const content = wrongAccesses.map(e => JSON.stringify(e)).join('\n')
