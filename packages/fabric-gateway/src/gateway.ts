@@ -1,7 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
-import { connect, Contract, Gateway, Identity, Signer, signers } from '@hyperledger/fabric-gateway';
+import {connect, Contract, Gateway, Identity, Signer, signers} from '@hyperledger/fabric-gateway';
 import * as crypto from 'crypto';
-import { promises as fs } from 'fs';
+import {promises as fs} from 'fs';
 
 export interface FabricOptions {
   channelName: string
@@ -13,6 +13,8 @@ export interface FabricOptions {
   peerEndpoint: string
   peerHostAlias: string
 }
+
+const utf8Decoder = new TextDecoder();
 
 export class FabricGateway {
   private client?: grpc.Client;
@@ -92,7 +94,9 @@ export class FabricGateway {
     }
 
     console.log('\n--> Evaluate Transaction: ReadAction');
-    await this.contract.evaluateTransaction('ReadAction', actionId);
+    const resultBytes = await this.contract.evaluateTransaction('ReadAction', actionId);
+    const resultJson = utf8Decoder.decode(resultBytes);
+    return JSON.parse(resultJson);
   }
 
   async readRecord(id: string): Promise<any> {
@@ -102,7 +106,9 @@ export class FabricGateway {
 
     try {
       console.log('\n--> Evaluate Transaction: ReadRecord');
-      await this.contract.evaluateTransaction('ReadRecord', id);
+      const resultBytes = await this.contract.evaluateTransaction('ReadRecord', id);
+      const resultJson = utf8Decoder.decode(resultBytes);
+      return JSON.parse(resultJson);
     } catch (err) {
       console.log(err);
     }
