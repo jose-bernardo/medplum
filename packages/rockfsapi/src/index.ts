@@ -5,9 +5,8 @@ import { resolve } from 'path';
 import stream from 'stream/promises';
 import { createHash } from 'crypto';
 import { RockFSConfig } from './config';
-import {Readable} from "node:stream";
+import { Readable } from "stream";
 import { rm } from 'fs/promises'
-import {getFabricGateway} from "@medplum/server/src/fabricgateway";
 
 const config: RockFSConfig =  JSON.parse(readFileSync(resolve(__dirname, '../', './config.json'), { encoding: 'utf8' }));
 const syncDirPath = resolve(__dirname, '../', config.syncDir);
@@ -31,8 +30,6 @@ async function computeFileHash(filePath: string): Promise<string> {
 }
 
 async function verifyWrite(newRecord: NewRecord): Promise<void>  {
-  const gateway = getFabricGateway();
-
   /*
   const action = await gateway.readAction(newRecord.actionId);
   if (action === undefined) {
