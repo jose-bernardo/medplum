@@ -7,20 +7,11 @@ const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
 const freshNewRecords: NewRecord[] = [];
 const wrongNewRecords: NewRecord[] = [];
-const accesses: Access[] = [];
-const freshAccesses: Access[] = [];
-const wrongAccesses: Access[] = [];
-
-
 
 interface NewRecord {
-  recordId: string
+  recordId?: string
   actionId: string
-  hash: string
-}
-
-interface Access {
-  actionId: string
+  hash?: string
 }
 
 export function getFabricGateway(): FabricGateway {
@@ -41,17 +32,7 @@ export function appendNewRecord(record: NewRecord): void {
   */
 }
 
-export function appendNewAccess(access: Access): void {
-  freshAccesses.push(access);
-
-  /*
-  if (accesses.length > 1000) {
-    accesses.splice(0, 1000).forEach(acc => verifyRead(acc).catch(err => console.log(err)));
-  }
-  */
-}
-
-export function initFabricGateway(serverConfig: MedplumServerConfig): void {
+export async function initFabricGateway(serverConfig: MedplumServerConfig): Promise<void> {
   const config1 = serverConfig.fabric[0];
 
   const gateway1 = new FabricGateway(config1);
@@ -84,7 +65,22 @@ export function initFabricGateway(serverConfig: MedplumServerConfig): void {
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 20000);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      if (freshNewRecords.length > 100) {
+        console.log('Reviewing requests');
+        await verifyLedger();
+      } else {
+        console.log('Waiting for more requests');
+        await new Promise(f => {
+          setTimeout(f, 20000)
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -95,38 +91,25 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  console.log('Reviewing requests');
-
-  let len = newRecords.length;
-  let freshLen = freshNewRecords.length;
+  const len = newRecords.length;
+  const freshLen = freshNewRecords.length;
   newRecords.push(...freshNewRecords.splice(0, freshLen));
 
   for (const newRecord of newRecords.splice(0, len)) {
     try {
-      await verifyWrite(newRecord);
+      if (newRecord.recordId !== undefined) {
+        await verifyWrite(newRecord);
+      } else {
+        await verifyRead(newRecord);
+      }
     } catch (err) {
       console.log(err);
       wrongNewRecords.push(newRecord);
     }
   }
 
-  len = accesses.length;
-  freshLen = freshAccesses.length;
-  newRecords.push(...freshNewRecords.splice(0, freshLen));
-
-  for (const newAccess of accesses.splice(0, len)) {
-      try {
-        await verifyRead(newAccess);
-      } catch (err) {
-        console.error(err);
-        wrongAccesses.push(newAccess);
-      }
-  }
-
-  const content = wrongAccesses.map(e => JSON.stringify(e)).join('\n')
-    + wrongNewRecords.map(e => JSON.stringify(e)).join('\n');
+  const content = wrongNewRecords.map(e => JSON.stringify(e)).join('\n');
   await fs.appendFile('blacklist.txt', content);
-  wrongAccesses.length = 0;
   wrongNewRecords.length = 0;
 }
 
@@ -157,10 +140,10 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   console.log(`Record ${newRecord.recordId} validation success`);
 }
 
-async function verifyRead(access: Access): Promise<void> {
+async function verifyRead(access: NewRecord): Promise<void> {
   const action = await getFabricGateway().readAction(access.actionId);
   if (action === undefined) {
-    wrongAccesses.push(access);
+    wrongNewRecords.push(access);
     console.error('Action not validated, adding to blacklist');
     return;
   }

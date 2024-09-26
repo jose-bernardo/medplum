@@ -9,7 +9,7 @@ import { authenticateRequest } from '../oauth/middleware';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
-import { appendNewAccess  } from "../fabricgateway";
+import { appendNewRecord  } from "../fabricgateway";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -32,7 +32,7 @@ binaryRouter.get(
       return;
     }
 
-    appendNewAccess({actionId: actionId});
+    appendNewRecord({actionId: actionId});
 
     const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);

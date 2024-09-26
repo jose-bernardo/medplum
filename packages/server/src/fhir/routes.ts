@@ -40,7 +40,7 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { createHash } from 'crypto';
-import { appendNewRecord, appendNewAccess } from '../fabricgateway';
+import { appendNewRecord } from '../fabricgateway';
 
 export const fhirRouter = Router();
 
@@ -308,7 +308,7 @@ protectedRoutes.use(
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
 
-        appendNewAccess({actionId: actionId as string});
+        appendNewRecord({actionId: actionId as string});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
