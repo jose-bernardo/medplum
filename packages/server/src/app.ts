@@ -201,7 +201,7 @@ export function initAppServices(config: MedplumServerConfig): Promise<void> {
     await initDatabase(config);
     await seedDatabase();
     await initKeys(config);
-    await initFabricGateway(config);
+    initFabricGateway(config).catch(err => console.error(err));
     initBinaryStorage(config.binaryStorage);
     initWorkers(config);
     initHeartbeat(config);
