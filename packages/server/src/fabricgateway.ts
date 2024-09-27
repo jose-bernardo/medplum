@@ -63,7 +63,9 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
+  setInterval(verifyLedger, 60000);
   // eslint-disable-next-line no-constant-condition
+  /*
   while (true) {
     try {
       if (freshNewRecords.length > 100) {
@@ -79,6 +81,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
       console.error(err);
     }
   }
+  */
 }
 
 export async function closeFabricGateway(): Promise<void> {
