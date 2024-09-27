@@ -76,14 +76,14 @@ function read() {
 
         invokeReadCC(resourceIds[idx], accessId);
 
-        const res = http.get(url + `/fhir/R4/${resourceType}/${resourceIds[idx]}?actionId=${accessId}`, fhirParams);
+        const res = http.get(url + `/fhir/R4/${resourceType}/${resourceIds[idx]}?accessId=${accessId}`, fhirParams);
         console.log(res.status);
     } else {
         const idx = Math.floor(Math.random() * binaryIds.length);
 
         invokeReadCC(binaryIds[idx], accessId);
 
-        const res = http.get(url + `/fhir/R4/Binary/${binaryIds[idx]}?actionId=${accessId}`, binaryParams);
+        const res = http.get(url + `/fhir/R4/Binary/${binaryIds[idx]}?accessId=${accessId}`, binaryParams);
         console.log(res.status);
     }
 }
