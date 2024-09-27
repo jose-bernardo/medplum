@@ -1,7 +1,7 @@
 import {Object, Property} from 'fabric-contract-api';
 
 @Object()
-export class Action {
+export class Access {
   @Property()
   public docType?: string;
 
@@ -13,10 +13,4 @@ export class Action {
 
   @Property()
   public Timestamp?: number = Date.now();
-
-  @Property()
-  public FunctionName: string = '';
-
-  @Property()
-  public FunctionParameters: string[] = [];
 }

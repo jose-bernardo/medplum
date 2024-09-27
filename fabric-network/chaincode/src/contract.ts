@@ -2,7 +2,7 @@ import {Context, Contract, Info, Returns, Transaction} from 'fabric-contract-api
 import stringify from 'json-stringify-deterministic';
 import sortKeysRecursive from 'sort-keys-recursive';
 import { Record } from './record';
-import { Action } from './action'
+import { Access } from './access'
 import {BadAction} from "./badAction";
 
 @Info({title: 'Contract', description: 'Smart contract for managing medical records and log operations'})
@@ -16,30 +16,28 @@ export class MedskyContract extends Contract {
 
   @Transaction(false)
   @Returns('string')
-  public async ReadAction(ctx: Context, actionId: string): Promise<string> {
-    const actionJSON = await ctx.stub.getState(actionId);
+  public async ReadAccess(ctx: Context, accessId: string): Promise<string> {
+    const actionJSON = await ctx.stub.getState(accessId);
     if (actionJSON.length === 0) {
-      throw new Error(`The action log ${actionId} does not exist`);
+      throw new Error(`The access log ${accessId} does not exist`);
     }
 
     return actionJSON.toString();
   }
 
   @Transaction()
-  public async LogAction(ctx: Context, recordIds: string[], actionId: string): Promise<void> {
-    const exists = await this.ActionExists(ctx, actionId);
+  public async LogAccess(ctx: Context, recordIds: string[], accessId: string): Promise<void> {
+    const exists = await this.ActionExists(ctx, accessId);
     if (exists) {
-      throw new Error(`The action ${actionId} already exist`);
+      throw new Error(`The access ${accessId} already exist`);
     }
 
-    const action: Action =  {
+    const action: Access =  {
       Requestor: ctx.stub.getCreator().idBytes.toString(),
       RecordIDs: recordIds,
-      FunctionName: ctx.stub.getFunctionAndParameters().fcn,
-      FunctionParameters: ctx.stub.getFunctionAndParameters().params
     }
 
-    return ctx.stub.putState(actionId, Buffer.from(JSON.stringify(action), 'utf8'));
+    return ctx.stub.putState(accessId, Buffer.from(JSON.stringify(action), 'utf8'));
   }
 
   @Transaction(false)
@@ -62,20 +60,20 @@ export class MedskyContract extends Contract {
       records.push(recordJSON);
     }
 
-    await this.LogAction(ctx, recordIds, actionId);
+    await this.LogAccess(ctx, recordIds, actionId);
 
     return records.toString();
   }
 
   @Transaction()
   @Returns('string')
-  public async ReadRecordTx(ctx: Context, recordId: string, actionId: string): Promise<string> {
+  public async ReadRecordTx(ctx: Context, recordId: string, accessId: string): Promise<string> {
     const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
     if (recordJSON.length === 0) {
       throw new Error(`The record ${recordId} does not exist`);
     }
 
-    await this.LogAction(ctx, [recordId], actionId);
+    await this.LogAccess(ctx, [recordId], accessId);
 
     return recordJSON.toString();
   }
@@ -92,7 +90,7 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction()
-  public async CreateRecords(ctx: Context, recordIds: string[], hashes: string[], actionId: string): Promise<void> {
+  public async CreateRecords(ctx: Context, recordIds: string[], hashes: string[]): Promise<void> {
     if (recordIds.length !== hashes.length) {
       throw new Error(`The number of record ids is different from the number of hashes`);
     }
@@ -100,27 +98,23 @@ export class MedskyContract extends Contract {
     for (let i = 0; i < recordIds.length; i++) {
 
       const record: Record = {
-        From: ctx.stub.getCreator().idBytes.toString(),
+        Requestor: ctx.stub.getCreator().idBytes.toString(),
         Hash: hashes[i]
       };
-
-      await this.LogAction(ctx, recordIds, actionId);
 
       await ctx.stub.putState(recordIds[i], Buffer.from(stringify(sortKeysRecursive(record))));
     }
   }
 
   @Transaction()
-  public async CreateRecord(ctx: Context, recordId: string, hash: string, actionId: string): Promise<void> {
+  public async CreateRecord(ctx: Context, recordId: string, hash: string): Promise<void> {
 
     const record: Record = {
-      From: ctx.stub.getCreator().idBytes.toString(),
+      Requestor: ctx.stub.getCreator().idBytes.toString(),
       Hash: hash
     };
 
     await ctx.stub.putState(recordId, Buffer.from(stringify(sortKeysRecursive(record))));
-
-    await this.LogAction(ctx, [recordId], actionId);
   }
 
   @Transaction()
@@ -130,18 +124,16 @@ export class MedskyContract extends Contract {
       throw new Error(`The record ${recordId} does not exist`);
     }
 
-    await this.LogAction(ctx, [recordId], actionId);
+    await this.LogAccess(ctx, [recordId], actionId);
     return ctx.stub.deleteState(recordId);
   }
 
   @Transaction()
   public async LogBadAction(
-    ctx: Context, badActionId: string, requestor: string, recordId: string, actionId: string, reason: string): Promise<void> {
+    ctx: Context, badActionId: string, requestor: string, reason: string): Promise<void> {
 
     const badAction: BadAction = {
       Requestor: requestor,
-      RecordID: recordId,
-      ActionID: actionId,
       Reason: reason
     }
 

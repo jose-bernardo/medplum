@@ -88,13 +88,13 @@ export class FabricGateway {
     this.contract = network.getContract(this.options.chaincodeName);
   }
 
-  async readAction(actionId: string): Promise<any> {
+  async readAccess(actionId: string): Promise<any> {
     if (!this.contract) {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Evaluate Transaction: ReadAction');
-    const resultBytes = await this.contract.evaluateTransaction('ReadAction', actionId);
+    console.log('\n--> Evaluate Transaction: ReadAccess');
+    const resultBytes = await this.contract.evaluateTransaction('ReadAccess', actionId);
     const resultJson = utf8Decoder.decode(resultBytes);
     return JSON.parse(resultJson);
   }

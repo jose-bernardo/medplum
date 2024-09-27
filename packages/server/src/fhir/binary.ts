@@ -35,13 +35,13 @@ binaryRouter.get(
     const ctx = getAuthenticatedContext();
     const { recordId } = req.params;
 
-    const actionId = req.query.actionId as string;
-    if (actionId === undefined) {
-      sendOutcome(res, badRequest('ActionID not provided.'));
+    const accessId = req.query.accessId as string;
+    if (accessId === undefined) {
+      sendOutcome(res, badRequest('Access ID not provided.'));
       return;
     }
 
-    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, actionId: actionId});
+    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, accessId: accessId});
 
     const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);
@@ -56,12 +56,6 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   const recordId = req.query.recordId as string;
   if (recordId === undefined) {
     sendOutcome(res, badRequest('RecordID not provided.'));
-    return;
-  }
-
-  const actionId = req.query.actionId as string;
-  if (actionId === undefined) {
-    sendOutcome(res, badRequest('ActionID not provided.'));
     return;
   }
 
@@ -129,7 +123,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   }
 
   const hash = await computeStreamHash(binarySource);
-  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, actionId: actionId, hash: hash});
+  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;

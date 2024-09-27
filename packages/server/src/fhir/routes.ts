@@ -297,12 +297,12 @@ protectedRoutes.use(
     if (!request.pathname.includes('$graphql')) {
       // Read request
       if (request.method === 'GET') {
-        const actionId = req.query.actionId;
-        if (actionId === undefined) {
-          throw new OperationOutcomeError(badRequest('ActionID not provided.'));
+        const accessId = req.query.accessId;
+        if (accessId === undefined) {
+          throw new OperationOutcomeError(badRequest('Access ID not provided.'));
         }
 
-        appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], actionId: actionId as string});
+        appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], accessId: accessId as string});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
@@ -316,10 +316,6 @@ protectedRoutes.use(
         if (request.body.id === undefined) {
           throw new OperationOutcomeError(badRequest('Resource without id'));
         }
-        const actionId = req.query.actionId;
-        if (actionId === undefined) {
-          throw new OperationOutcomeError(badRequest('ActionID not provided.'));
-        }
 
         const sha256 = (resource: string): string => {
           return createHash('sha256')
@@ -329,7 +325,7 @@ protectedRoutes.use(
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
-        appendNewRecord({requestor: JSON.stringify(ctx.profile), recordId: request.body.id, resourceType: request.body.resourceType, actionId: actionId as string, hash: sha256(JSON.stringify(request.body))});
+        appendNewRecord({requestor: JSON.stringify(ctx.profile), recordId: request.body.id, resourceType: request.body.resourceType, hash: sha256(JSON.stringify(request.body))});
       }
     } else {
       result = await getInternalFhirRouter().handleRequest(request, ctx.repo);

@@ -6,15 +6,21 @@ import {ResourceType} from "@medplum/fhirtypes";
 import {randomUUID} from "crypto";
 
 const gateways: FabricGateway[] = [];
-const newRecords: NewRecord[] = [];
-const freshNewRecords: NewRecord[] = [];
+const matureOps: (NewRecord|Access)[] = [];
+const freshOps: (NewRecord|Access)[] = [];
 
 interface NewRecord {
   recordId: string
   requestor: string
-  actionId: string
   resourceType: string
-  hash?: string
+  hash: string
+  blReason?: string
+}
+
+interface Access {
+  accessId: string
+  requestor: string
+  resourceType: string
   blReason?: string
 }
 
@@ -26,8 +32,8 @@ export function getFabricGateway(): FabricGateway {
   return gateways[idx];
 }
 
-export function appendNewRecord(record: NewRecord): void {
-  freshNewRecords.push(record);
+export function appendNewRecord(op: NewRecord|Access): void {
+  freshOps.push(op);
 }
 
 export async function initFabricGateway(serverConfig: MedplumServerConfig): Promise<void> {
@@ -66,7 +72,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      if (freshNewRecords.length > 1000) {
+      if (freshOps.length > 1000) {
         console.log('Reviewing requests');
         await verifyLedger();
       } else {
@@ -89,24 +95,23 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  const len = newRecords.length;
-  const freshLen = freshNewRecords.length;
-  newRecords.push(...freshNewRecords.splice(0, freshLen));
+  const len = matureOps.length;
+  const freshLen = freshOps.length;
+  matureOps.push(...freshOps.splice(0, freshLen));
 
-  for (const newRecord of newRecords.splice(0, len)) {
+  for (const op of matureOps.splice(0, len)) {
     try {
-      if (newRecord.recordId !== undefined) {
-        await verifyWrite(newRecord);
+      if ('hash' in op) {
+        await verifyWrite(op as NewRecord);
       } else {
-        await verifyRead(newRecord);
+        await verifyRead(op as Access);
       }
     } catch (err) {
       console.log(err);
-      if (!newRecord.blReason) {
-        newRecord.blReason = JSON.stringify(err);
+      if (!op.blReason) {
+        op.blReason = JSON.stringify(err);
       }
-      await getFabricGateway().logBadAction(
-        randomUUID(), newRecord.requestor, newRecord.recordId, newRecord.actionId, newRecord.blReason);
+      await getFabricGateway().logBadAction(randomUUID(), op.blReason);
     }
   }
 }
@@ -114,34 +119,27 @@ async function verifyLedger(): Promise<void> {
 async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   const gateway = getFabricGateway();
 
-  const action = await gateway.readAction(newRecord.actionId);
-  if (action === undefined) {
-    newRecord.blReason = 'action id not found';
-    throw new Error('Action could not be validated');
-  }
-
   const record = await gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
-    newRecord.blReason = 'record id not found';
-    throw new Error('Record could not be validated');
+    newRecord.blReason = `Record ${newRecord.recordId} not found`;
+    throw new Error(`Record ${newRecord.recordId} not found`);
   }
 
   if (newRecord.hash !== record.Hash) {
-    newRecord.blReason = 'hash does not match';
+    newRecord.blReason = `Record ${newRecord.recordId} hash does not match`;
     await getSystemRepo().deleteResource(newRecord.resourceType as ResourceType, newRecord.recordId);
-    throw new Error('Digest of data being stored does not match fabric network digest');
+    throw new Error(`Record ${newRecord.recordId} hash does not match`);
   }
 
   console.log(`Record ${newRecord.recordId} validation success`);
 }
 
-async function verifyRead(access: NewRecord): Promise<void> {
-  const action = await getFabricGateway().readAction(access.actionId);
-  if (action === undefined) {
-    access.blReason = 'action id not found';
-    throw new Error('Action not validated, adding to blacklist');
+async function verifyRead(access: Access): Promise<void> {
+  const accessLog = await getFabricGateway().readAccess(access.accessId);
+  if (accessLog === undefined) {
+    access.blReason = `Access ${access.accessId} not found`;
+    throw new Error(`Access ${access.accessId} not found`);
   }
 
-  console.log(action);
-  console.log(`Access ${access.actionId} validation success`);
+  console.log(`Access ${access.accessId} validation success`);
 }

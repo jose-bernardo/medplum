@@ -6,8 +6,11 @@ export class Record {
     public docType?: string;
 
     @Property()
-    public From: string = '';
+    public Requestor: string = '';
 
     @Property()
     public Hash: string = '';
+
+    @Property()
+    public LastUpdated?: number = Date.now();
 }
