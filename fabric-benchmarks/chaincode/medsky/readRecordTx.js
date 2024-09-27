@@ -1,7 +1,6 @@
 'use strict';
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
-const { randomUUID } = require('crypto');
 
 /**
  * Workload module for the benchmark round.
@@ -13,6 +12,7 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
   constructor() {
     super();
     this.txIndex = 0;
+    this.txAccessIndex = 0;
     this.limitIndex = 0;
   }
 
@@ -39,7 +39,7 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
   async submitTransaction() {
     this.txIndex++;
     let recordId = this.txIndex.toString();
-    let actionId = this.txIndex.toString();
+    let accessId = this.txAccessIndex.toString();
 
     let args = {
       contractId: 'medsky',
@@ -47,10 +47,9 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
       contractFunction: 'ReadRecordTx',
       contractArguments: [
         'Client' + this.workerIndex + '_RECORD' + recordId,
-        'Client' + this.workerIndex + '_READ_ACTION' + actionId
+        'Client' + this.workerIndex + '_READ_ACTION' + accessId
       ],
       timeout: 30,
-      readOnly: true
     };
 
     if (this.txIndex === this.limitIndex) {

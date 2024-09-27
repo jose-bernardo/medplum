@@ -9,9 +9,9 @@ import {BadAction} from "./badAction";
 export class MedskyContract extends Contract {
 
   @Returns('boolean')
-  public async ActionExists(ctx: Context, actionId: string): Promise<boolean> {
-    const actionJSON = await ctx.stub.getState(actionId);
-    return actionJSON.length > 0;
+  public async AccessExists(ctx: Context, accessId: string): Promise<boolean> {
+    const accessJSON = await ctx.stub.getState(accessId);
+    return accessJSON.length > 0;
   }
 
   @Transaction(false)
@@ -27,7 +27,7 @@ export class MedskyContract extends Contract {
 
   @Transaction()
   public async LogAccess(ctx: Context, recordIds: string[], accessId: string): Promise<void> {
-    const exists = await this.ActionExists(ctx, accessId);
+    const exists = await this.AccessExists(ctx, accessId);
     if (exists) {
       throw new Error(`The access ${accessId} already exist`);
     }

@@ -7,6 +7,7 @@ import { SharedArray } from 'k6/data';
 export const options = {
   vus: 50,
   duration: '10m',
+  setupTimeout: '4m'
 };
 
 const url = 'http://10.15.0.11:5555';
