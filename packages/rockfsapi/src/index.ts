@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { FabricGateway } from '@medplum/fabric-gateway'
 import { createWriteStream, createReadStream, readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -81,6 +81,13 @@ const gateway = new FabricGateway(config.fabric);
 gateway.connect();
 
 setInterval(verifyLedger, 20000);
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  req.on('aborted', () => {
+    console.log('Request was aborted by the client.');
+  });
+  next();
+});
 
 app.get('/', (_req: Request, res: Response) => {
   res.sendStatus(200);
