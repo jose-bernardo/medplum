@@ -1,17 +1,20 @@
 import { FabricGateway } from '@medplum/fabric-gateway';
 import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
-import fs from "fs/promises";
+import {getSystemRepo} from "./fhir/repo";
+import {ResourceType} from "@medplum/fhirtypes";
 
 const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
 const freshNewRecords: NewRecord[] = [];
-const wrongNewRecords: NewRecord[] = [];
 
 interface NewRecord {
-  recordId?: string
+  recordId: string
+  requestor: string
   actionId: string
+  resourceType: string
   hash?: string
+  blReason?: string
 }
 
 export function getFabricGateway(): FabricGateway {
@@ -24,12 +27,6 @@ export function getFabricGateway(): FabricGateway {
 
 export function appendNewRecord(record: NewRecord): void {
   freshNewRecords.push(record);
-
-  /*
-  if (freshNewRecords.length > 1000) {
-    newRecords.splice(0, 1000).forEach(newRecord => verifyWrite(newRecord).catch(err => console.log(err)));
-  }
-  */
 }
 
 export async function initFabricGateway(serverConfig: MedplumServerConfig): Promise<void> {
@@ -65,9 +62,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 20000);
   // eslint-disable-next-line no-constant-condition
-  /*
   while (true) {
     try {
       if (freshNewRecords.length > 100) {
@@ -83,8 +78,6 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
       console.error(err);
     }
   }
-
-   */
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -108,13 +101,10 @@ async function verifyLedger(): Promise<void> {
       }
     } catch (err) {
       console.log(err);
-      wrongNewRecords.push(newRecord);
+      await getFabricGateway().logBadAction(
+        newRecord.requestor, newRecord.recordId, newRecord.actionId, newRecord.blReason);
     }
   }
-
-  const content = wrongNewRecords.map(e => JSON.stringify(e)).join('\n');
-  await fs.appendFile('blacklist.txt', content);
-  wrongNewRecords.length = 0;
 }
 
 async function verifyWrite(newRecord: NewRecord): Promise<void>  {
@@ -122,23 +112,20 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
 
   const action = await gateway.readAction(newRecord.actionId);
   if (action === undefined) {
-    wrongNewRecords.push(newRecord)
-    console.error('Action could not be validated');
-    return;
+    newRecord.blReason = 'action id not found';
+    throw new Error('Action could not be validated');
   }
 
   const record = await gateway.readRecord(newRecord.recordId);
   if (record === undefined) {
-    wrongNewRecords.push(newRecord)
-    console.error('Record could not be validated');
-    return;
+    newRecord.blReason = 'record id not found';
+    throw new Error('Record could not be validated');
   }
 
   if (newRecord.hash !== record.Hash) {
-    wrongNewRecords.push(newRecord);
-    //await getSystemRepo().deleteResource(record.ResourceType, newRecord.recordId);
-    console.error('Digest of data being stored does not match fabric network digest');
-    return;
+    newRecord.blReason = 'hash does not match';
+    await getSystemRepo().deleteResource(newRecord.resourceType as ResourceType, newRecord.recordId);
+    throw new Error('Digest of data being stored does not match fabric network digest');
   }
 
   console.log(`Record ${newRecord.recordId} validation success`);
@@ -147,9 +134,8 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
 async function verifyRead(access: NewRecord): Promise<void> {
   const action = await getFabricGateway().readAction(access.actionId);
   if (action === undefined) {
-    wrongNewRecords.push(access);
-    console.error('Action not validated, adding to blacklist');
-    return;
+    access.blReason = 'action id not found';
+    throw new Error('Action not validated, adding to blacklist');
   }
 
   console.log(action);

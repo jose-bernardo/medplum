@@ -10,8 +10,17 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
 import { appendNewRecord  } from "../fabricgateway";
+import {createHash} from "crypto";
+import stream from "stream/promises";
 
 export const binaryRouter = Router().use(authenticateRequest);
+
+async function computeStreamHash(binary: BinarySource): Promise<string> {
+  const hash = createHash('sha256');
+  await stream.pipeline(binary, hash);
+
+  return hash.digest('hex');
+}
 
 // Create a binary
 binaryRouter.post('/', asyncWrap(handleBinaryWriteRequest));
@@ -32,7 +41,7 @@ binaryRouter.get(
       return;
     }
 
-    appendNewRecord({actionId: actionId});
+    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, actionId: actionId});
 
     const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);
@@ -118,6 +127,9 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     binary = await ctx.repo.updateResource<Binary>(binary);
     outcome = allOk;
   }
+
+  const hash = await computeStreamHash(binarySource);
+  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, actionId: actionId, hash: hash});
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;

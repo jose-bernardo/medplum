@@ -104,14 +104,21 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    try {
-      console.log('\n--> Evaluate Transaction: ReadRecord');
-      const resultBytes = await this.contract.evaluateTransaction('ReadRecord', id);
-      const resultJson = utf8Decoder.decode(resultBytes);
-      return JSON.parse(resultJson);
-    } catch (err) {
-      console.log(err);
+    console.log('\n--> Evaluate Transaction: ReadRecord');
+    const resultBytes = await this.contract.evaluateTransaction('ReadRecord', id);
+    const resultJson = utf8Decoder.decode(resultBytes);
+    return JSON.parse(resultJson);
+  }
+
+  async logBadAction(
+    id: string, requestor: string, recordId: string, actionId: string, reason: string): Promise<void> {
+
+    if (!this.contract) {
+      throw new Error('contract not defined');
     }
+
+    console.log('\n--> Submit Transaction: LogBadAction');
+    await this.contract.submitTransaction('LogBadAction', id, requestor, recordId, actionId, reason);
   }
 
   /*

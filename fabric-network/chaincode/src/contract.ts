@@ -3,6 +3,7 @@ import stringify from 'json-stringify-deterministic';
 import sortKeysRecursive from 'sort-keys-recursive';
 import { Record } from './record';
 import { Action } from './action'
+import {BadAction} from "./badAction";
 
 @Info({title: 'Contract', description: 'Smart contract for managing medical records and log operations'})
 export class MedskyContract extends Contract {
@@ -131,5 +132,19 @@ export class MedskyContract extends Contract {
 
     await this.LogAction(ctx, [recordId], actionId);
     return ctx.stub.deleteState(recordId);
+  }
+
+  @Transaction()
+  public async LogBadAction(
+    ctx: Context, badActionId: string, requestor: string, recordId: string, actionId: string, reason: string): Promise<void> {
+
+    const badAction: BadAction = {
+      Requestor: requestor,
+      RecordID: recordId,
+      ActionID: actionId,
+      Reason: reason
+    }
+
+    return ctx.stub.putState(badActionId, Buffer.from(stringify(sortKeysRecursive(badAction))));
   }
 }

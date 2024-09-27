@@ -272,14 +272,6 @@ function initInternalFhirRouter(): FhirRouter {
     }
   });
 
-  /*
-  router.add('POST', '/log/:id', async (req: FhirRequest) => {
-    const { id } = req.params as { id: string };
-    const actionLog = await getFabricGateway().readAction(id);
-    return [allOk, actionLog];
-  })
-  */
-
   return router;
 }
 
@@ -300,6 +292,8 @@ protectedRoutes.use(
 
     let result: FhirResponse;
 
+    const urlSplit = req.originalUrl.split('/');
+
     if (!request.pathname.includes('$graphql')) {
       // Read request
       if (request.method === 'GET') {
@@ -308,7 +302,7 @@ protectedRoutes.use(
           throw new OperationOutcomeError(badRequest('ActionID not provided.'));
         }
 
-        appendNewRecord({actionId: actionId as string});
+        appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], actionId: actionId as string});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
@@ -335,7 +329,7 @@ protectedRoutes.use(
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
-        appendNewRecord({recordId: request.body.id, actionId: actionId as string, hash: sha256(JSON.stringify(request.body))});
+        appendNewRecord({requestor: JSON.stringify(ctx.profile), recordId: request.body.id, resourceType: request.body.resourceType, actionId: actionId as string, hash: sha256(JSON.stringify(request.body))});
       }
     } else {
       result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
