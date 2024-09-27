@@ -37,7 +37,7 @@ export class MedskyContract extends Contract {
       RecordIDs: recordIds,
     }
 
-    return ctx.stub.putState(accessId, Buffer.from(sortKeysRecursive(JSON.stringify(access)), 'utf8'));
+    return ctx.stub.putState(accessId, Buffer.from(stringify(sortKeysRecursive(access)), 'utf-8'));
   }
 
   @Transaction(false)
@@ -102,7 +102,7 @@ export class MedskyContract extends Contract {
         Hash: hashes[i]
       };
 
-      await ctx.stub.putState(recordIds[i], Buffer.from(stringify(sortKeysRecursive(record))));
+      await ctx.stub.putState(recordIds[i], Buffer.from(stringify(sortKeysRecursive(record)), 'utf-8'));
     }
   }
 
