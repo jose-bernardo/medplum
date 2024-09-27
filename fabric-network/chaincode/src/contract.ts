@@ -32,12 +32,12 @@ export class MedskyContract extends Contract {
       throw new Error(`The access ${accessId} already exist`);
     }
 
-    const action: Access =  {
+    const access: Access =  {
       Requestor: ctx.stub.getCreator().idBytes.toString(),
       RecordIDs: recordIds,
     }
 
-    return ctx.stub.putState(accessId, Buffer.from(JSON.stringify(action), 'utf8'));
+    return ctx.stub.putState(accessId, Buffer.from(sortKeysRecursive(JSON.stringify(access)), 'utf8'));
   }
 
   @Transaction(false)
@@ -114,7 +114,7 @@ export class MedskyContract extends Contract {
       Hash: hash
     };
 
-    await ctx.stub.putState(recordId, Buffer.from(stringify(sortKeysRecursive(record))));
+    await ctx.stub.putState(recordId, Buffer.from(stringify(sortKeysRecursive(record)), 'utf-8'));
   }
 
   @Transaction()
