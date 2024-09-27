@@ -3,6 +3,7 @@ import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
 import {getSystemRepo} from "./fhir/repo";
 import {ResourceType} from "@medplum/fhirtypes";
+import {randomUUID} from "crypto";
 
 const gateways: FabricGateway[] = [];
 const newRecords: NewRecord[] = [];
@@ -102,7 +103,7 @@ async function verifyLedger(): Promise<void> {
     } catch (err) {
       console.log(err);
       await getFabricGateway().logBadAction(
-        newRecord.requestor, newRecord.recordId, newRecord.actionId, newRecord.blReason);
+        randomUUID(), newRecord.requestor, newRecord.recordId, newRecord.actionId, newRecord.blReason);
     }
   }
 }
