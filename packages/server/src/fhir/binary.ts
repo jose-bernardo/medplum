@@ -13,6 +13,7 @@ import { appendNewRecord  } from "../fabricgateway";
 import {createHash} from "crypto";
 import stream from "stream/promises";
 import {Readable} from "node:stream";
+import {config} from "dotenv";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -123,19 +124,18 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
-  const binarySource1 = (binarySource as Readable).pipe(new PassThrough())
-  const binarySource2 = (binarySource as Readable).pipe(new PassThrough())
+  const stream1 = (binarySource as Readable).pipe(new PassThrough());
+  const stream2 = (binarySource as Readable).pipe(new PassThrough());
+
+  const a = computeStreamHash(stream1);
+  console.log(a);
+  const b = computeStreamHash(stream2);
+  console.log(b);
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
-    await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource1);
+    await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource);
   }
-
-  //const hash = await computeStreamHash(binarySource2);
-
-  //console.log(hash);
-
-  //appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
 
   await sendResponse(req, res, outcome, {
     ...binary,
