@@ -123,25 +123,19 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
-  const binarySource1 = new PassThrough();
-  const binarySource2 = new PassThrough();
-
-  if (binarySource instanceof Readable) {
-    binarySource.pipe(binarySource1);
-    binarySource.pipe(binarySource2);
-
-    const hash = await computeStreamHash(binarySource1);
-
-    console.log(hash);
-
-    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
-  }
-
+  const binarySource1 = (binarySource as Readable).pipe(new PassThrough())
+  const binarySource2 = (binarySource as Readable).pipe(new PassThrough())
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
-    await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource2);
+    await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource1);
   }
+
+  const hash = await computeStreamHash(binarySource2);
+
+  console.log(hash);
+
+  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
 
   await sendResponse(req, res, outcome, {
     ...binary,
