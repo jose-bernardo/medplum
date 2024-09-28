@@ -13,7 +13,6 @@ import { appendNewRecord  } from "../fabricgateway";
 import {createHash} from "crypto";
 import stream from "stream/promises";
 import {Readable} from "node:stream";
-import {config} from "dotenv";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
