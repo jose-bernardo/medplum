@@ -1,7 +1,7 @@
 import {ContentType, allOk, badRequest, created, isResource} from '@medplum/core';
 import { Binary, OperationOutcome } from '@medplum/fhirtypes';
 import { Request, Response, Router } from 'express';
-import internal, { PassThrough } from 'stream';
+import internal, { PassThrough, pipeline } from 'stream';
 import zlib from 'zlib';
 import { asyncWrap } from '../async';
 import { getAuthenticatedContext, getLogger } from '../context';
@@ -12,26 +12,18 @@ import { BinarySource, getBinaryStorage } from './storage';
 import { appendNewRecord  } from "../fabricgateway";
 import {createHash} from "crypto";
 import {Readable} from "node:stream";
+import {promisify} from "node:util";
 
 export const binaryRouter = Router().use(authenticateRequest);
+
+const pipelineAsync = promisify(pipeline);
 
 async function computeStreamHash(binary: Readable): Promise<string> {
   const hash = createHash('sha256');
 
-  return new Promise((resolve, reject) => {
-    binary.on('data', (chunk) => {
-      hash.update(chunk); // Update the hash with the current chunk
-    });
+  await pipelineAsync(binary, hash);
 
-    binary.on('end', () => {
-      const digest = hash.digest('hex');
-      resolve(digest);
-    });
-
-    binary.on('error', (err) => {
-      reject(err); // Reject the promise on error
-    });
-  });
+  return hash.digest('hex');
 }
 
 // Create a binary
