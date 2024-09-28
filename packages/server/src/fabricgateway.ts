@@ -103,7 +103,8 @@ async function verifyLedger(): Promise<void> {
 
 async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
   const recordIds = newRecords.map((record) => record.recordId);
-  const ledgerChunk = getFabricGateway().readRecords(recordIds);
+  const ledgerChunk: JSON[] = getFabricGateway().readRecords(recordIds);
+  console.log('Verifying write chunk');
   for (let i = 0; i < newRecords.length; i++) {
     const newRecord = newRecords[i]
     try {
@@ -119,7 +120,8 @@ async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
 
 async function verifyReadChunk(newAccesses: Access[]): Promise<void> {
   const recordIds = newAccesses.map((access) => access.accessId);
-  const ledgerChunk = getFabricGateway().readAccesses(recordIds);
+  const ledgerChunk: JSON[] = getFabricGateway().readAccesses(recordIds);
+  console.log('Verifying read chunk');
   for (let i = 0; i < newAccesses.length; i++) {
     const newAccess = newAccesses[i];
     try {
