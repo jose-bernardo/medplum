@@ -10,13 +10,10 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
 import { appendNewRecord  } from "../fabricgateway";
-import stream from 'stream/promises';
 import {createHash} from "crypto";
-import {PassThrough} from "node:stream";
+import {PassThrough, Readable} from "node:stream";
 
 export const binaryRouter = Router().use(authenticateRequest);
-
-const hash = createHash('sha256');
 
 // Create a binary
 binaryRouter.post('/', asyncWrap(handleBinaryWriteRequest));
@@ -121,14 +118,16 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   const stream2 = new PassThrough();
   const stream1 = new PassThrough();
 
-  await stream.pipeline(binarySource, stream1, stream2);
+  const hash = createHash('sha256');
 
-  await stream.pipeline(stream1, hash);
+  (binarySource as Readable).pipe(stream1);
+  (binarySource as Readable).pipe(stream2);
 
-  const hashh = hash.digest('hex');
-
-  console.log(hash);
-  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
+  stream1.pipe(hash).on('end', () => {
+    const hashh = hash.digest('hex');
+    console.log(hashh);
+    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
+  });
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
