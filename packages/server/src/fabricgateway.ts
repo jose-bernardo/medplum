@@ -6,8 +6,12 @@ import {ResourceType} from "@medplum/fhirtypes";
 import {randomUUID} from "crypto";
 
 const gateways: FabricGateway[] = [];
-const matureOps: (NewRecord|Access)[] = [];
-const freshOps: (NewRecord|Access)[] = [];
+const matureWriteOps: (NewRecord)[] = [];
+const freshWriteOps: (NewRecord)[] = [];
+const matureReadOps: (Access)[] = [];
+const freshReadOps: (Access)[] = [];
+
+const chunkSize = 50;
 
 interface NewRecord {
   recordId: string
@@ -19,6 +23,7 @@ interface NewRecord {
 
 interface Access {
   accessId: string
+  recordId: string
   requestor: string
   resourceType: string
   blReason?: string
@@ -32,8 +37,12 @@ export function getFabricGateway(): FabricGateway {
   return gateways[idx];
 }
 
-export function appendNewRecord(op: NewRecord|Access): void {
-  freshOps.push(op);
+export function appendNewRecord(op: NewRecord): void {
+  freshWriteOps.push(op);
+}
+
+export function appendNewAccess(op: Access): void {
+  freshReadOps.push(op);
 }
 
 export async function initFabricGateway(serverConfig: MedplumServerConfig): Promise<void> {
@@ -80,31 +89,53 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  const len = 6 * 60;
-  matureOps.push(...freshOps.splice(0, len));
+  for (let i = 0; i < matureWriteOps.length; i += chunkSize) {
+    const chunk = matureWriteOps.splice(i, i + chunkSize);
+    await verifyWriteChunk(chunk);
+  }
 
-  for (const op of matureOps.splice(0, len)) {
+  for (let i = 0; i < matureReadOps.length; i += chunkSize) {
+    const chunk = matureReadOps.splice(i, i + chunkSize);
+    await verifyReadChunk(chunk);
+  }
+}
+
+async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
+  const recordIds = newRecords.map((record) => record.recordId);
+  const ledgerChunk = getFabricGateway().readRecords(recordIds);
+  for (let i = 0; i < newRecords.length; i++) {
+    const newRecord = newRecords[i]
     try {
-      if ('hash' in op) {
-        await verifyWrite(op as NewRecord);
-      } else {
-        await verifyRead(op as Access);
-      }
+      await verifyWrite(newRecord, ledgerChunk[i]);
     } catch (err) {
-      console.log(err);
-      if (!op.blReason) {
-        op.blReason = JSON.stringify(err);
+      if (!newRecord.blReason) {
+        newRecord.blReason = JSON.stringify(err);
       }
-      await getFabricGateway().logBadAction(randomUUID(), op.blReason);
+      await getFabricGateway().logBadAction(randomUUID(), newRecord.blReason);
     }
   }
 }
 
-async function verifyWrite(newRecord: NewRecord): Promise<void>  {
-  const gateway = getFabricGateway();
+async function verifyReadChunk(newAccesses: Access[]): Promise<void> {
+  const recordIds = newAccesses.map((access) => access.accessId);
+  const ledgerChunk = getFabricGateway().readAccesses(recordIds);
+  for (let i = 0; i < newAccesses.length; i++) {
+    const newAccess = newAccesses[i];
+    try {
+      await verifyRead(newAccess, ledgerChunk[i]);
+    } catch (err) {
+      console.log(err);
+      if (!newAccess.blReason) {
+        newAccess.blReason = JSON.stringify(err);
+      }
+      await getFabricGateway().logBadAction(randomUUID(), newAccess.blReason);
+    }
+  }
+}
 
-  const record = await gateway.readRecord(newRecord.recordId);
-  if (record === undefined) {
+async function verifyWrite(newRecord: NewRecord, record: any): Promise<void>  {
+  console.log(record);
+  if (record === '') {
     newRecord.blReason = `Record ${newRecord.recordId} not found`;
     throw new Error(`Record ${newRecord.recordId} not found`);
   }
@@ -118,12 +149,11 @@ async function verifyWrite(newRecord: NewRecord): Promise<void>  {
   console.log(`Record ${newRecord.recordId} validation success`);
 }
 
-async function verifyRead(access: Access): Promise<void> {
-  const accessLog = await getFabricGateway().readAccess(access.accessId);
-  if (accessLog === undefined) {
-    access.blReason = `Access ${access.accessId} not found`;
-    throw new Error(`Access ${access.accessId} not found`);
+async function verifyRead(newAccess: Access, accessLog: any): Promise<void> {
+  if (accessLog === '') {
+    newAccess.blReason = `Access ${newAccess.accessId} not found`;
+    throw new Error(`Access ${newAccess.accessId} not found`);
   }
 
-  console.log(`Access ${access.accessId} validation success`);
+  console.log(`Access ${newAccess.accessId} validation success`);
 }

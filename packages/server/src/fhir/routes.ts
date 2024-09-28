@@ -40,7 +40,7 @@ import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
 import { createHash } from 'crypto';
-import { appendNewRecord } from '../fabricgateway';
+import {appendNewAccess, appendNewRecord} from '../fabricgateway';
 
 export const fhirRouter = Router();
 
@@ -302,7 +302,7 @@ protectedRoutes.use(
           throw new OperationOutcomeError(badRequest('Access ID not provided.'));
         }
 
-        appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], accessId: accessId as string});
+        appendNewAccess({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], accessId: accessId as string});
 
         result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
 
