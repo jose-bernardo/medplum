@@ -72,7 +72,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      if (freshOps.length > 1000) {
+      if (freshOps.length > 50) {
         console.log('Reviewing requests');
         await verifyLedger();
       } else {
@@ -95,7 +95,7 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  const len = matureOps.length;
+  const len = Math.min(matureOps.length, 7 * 60);
   const freshLen = freshOps.length;
   matureOps.push(...freshOps.splice(0, freshLen));
 
