@@ -17,9 +17,19 @@ export const binaryRouter = Router().use(authenticateRequest);
 
 async function computeStreamHash(binary: Readable): Promise<string> {
   const hash = createHash('sha256');
-  binary.pipe(hash);
 
-  return hash.digest('hex');
+  return new Promise((resolve, reject) => {
+    binary.pipe(hash);
+
+    binary.on('end', () => {
+      const digest = hash.digest('hex');
+      resolve(digest);
+    });
+
+    binary.on('error', (err) => {
+      reject(new Error(`Error reading the file: ${err.message}`)); // Reject the promise on error
+    });
+  });
 }
 
 // Create a binary
