@@ -11,7 +11,7 @@ const freshWriteOps: (NewRecord)[] = [];
 const matureReadOps: (Access)[] = [];
 const freshReadOps: (Access)[] = [];
 
-const chunkSize = 50;
+const chunkSize = 5;
 
 interface NewRecord {
   recordId: string
@@ -78,7 +78,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 60000);
+  setInterval(verifyLedger, 5000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -136,7 +136,6 @@ async function verifyReadChunk(newAccesses: Access[]): Promise<void> {
 }
 
 async function verifyWrite(newRecord: NewRecord, record: any): Promise<void>  {
-  console.log(record);
   if (record === '') {
     newRecord.blReason = `Record ${newRecord.recordId} not found`;
     throw new Error(`Record ${newRecord.recordId} not found`);
