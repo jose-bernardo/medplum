@@ -19,7 +19,9 @@ async function computeStreamHash(binary: Readable): Promise<string> {
   const hash = createHash('sha256');
 
   return new Promise((resolve, reject) => {
-    binary.pipe(hash);
+    binary.on('data', (chunk) => {
+      hash.update(chunk); // Update the hash with the current chunk
+    });
 
     binary.on('end', () => {
       const digest = hash.digest('hex');
@@ -27,7 +29,7 @@ async function computeStreamHash(binary: Readable): Promise<string> {
     });
 
     binary.on('error', (err) => {
-      reject(new Error(`Error reading the file: ${err.message}`)); // Reject the promise on error
+      reject(err); // Reject the promise on error
     });
   });
 }
