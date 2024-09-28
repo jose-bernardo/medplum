@@ -54,14 +54,14 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   const contentType = req.get('Content-Type') as string;
 
-  const streamm = getContentStream(req);
-  if (!streamm) {
+  const stream = getContentStream(req);
+  if (!stream) {
     sendOutcome(res, badRequest('Unsupported content encoding'));
     return;
   }
 
   let binary: Binary | undefined = undefined;
-  let binarySource: BinarySource = streamm;
+  let binarySource: BinarySource = stream;
 
   // From the spec: https://hl7.org/fhir/R4/binary.html#rest
   //
@@ -74,7 +74,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   let binaryContentSpecialCase = false;
 
   if (contentType === ContentType.FHIR_JSON) {
-    const str = await readStreamToString(streamm);
+    const str = await readStreamToString(stream);
     try {
       // The binary handler does *not* use Express body-parser in order to support raw binary data.
       // Therefore, we need to manually parse the body stream as JSON.
@@ -115,15 +115,15 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
-  const stream2 = new PassThrough();
   const stream1 = new PassThrough();
+  const stream2 = new PassThrough();
 
   const hash = createHash('sha256');
 
   (binarySource as Readable).pipe(stream1);
   (binarySource as Readable).pipe(stream2);
 
-  stream1.pipe(hash).on('end', () => {
+  stream1.pipe(hash).on('finish', () => {
     const hashh = hash.digest('hex');
     console.log(hashh);
     appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
