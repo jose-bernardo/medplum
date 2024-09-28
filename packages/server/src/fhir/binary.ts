@@ -131,11 +131,11 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource1);
   }
 
-  const hash = await computeStreamHash(binarySource2);
+  //const hash = await computeStreamHash(binarySource2);
 
-  console.log(hash);
+  //console.log(hash);
 
-  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
+  //appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
 
   await sendResponse(req, res, outcome, {
     ...binary,
