@@ -69,22 +69,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      if (freshOps.length > 50) {
-        console.log('Reviewing requests');
-        await verifyLedger();
-      } else {
-        console.log('Waiting for more requests');
-        await new Promise(f => {
-          setTimeout(f, 60000)
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
+  setInterval(verifyLedger, 60000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
@@ -95,9 +80,8 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  const len = Math.min(matureOps.length, 7 * 60);
-  const freshLen = freshOps.length;
-  matureOps.push(...freshOps.splice(0, freshLen));
+  const len = 6 * 60;
+  matureOps.push(...freshOps.splice(0, len));
 
   for (const op of matureOps.splice(0, len)) {
     try {
