@@ -113,7 +113,7 @@ async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
       if (!newRecord.blReason) {
         newRecord.blReason = JSON.stringify(err);
       }
-      await getFabricGateway().logBadAction(randomUUID(), newRecord.blReason);
+      //await getFabricGateway().logBadAction(randomUUID(), newRecord.blReason);
     }
   }
 }
@@ -130,7 +130,7 @@ async function verifyReadChunk(newAccesses: Access[]): Promise<void> {
       if (!newAccess.blReason) {
         newAccess.blReason = JSON.stringify(err);
       }
-      await getFabricGateway().logBadAction(randomUUID(), newAccess.blReason);
+      //await getFabricGateway().logBadAction(randomUUID(), newAccess.blReason);
     }
   }
 }

@@ -15,7 +15,6 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction(false)
-  @Returns('string')
   public async ReadAccesses(ctx: Context, accessIds: string[]): Promise<string[]> {
     const accesses: string[] = [];
     for (const accessId of accessIds) {
@@ -28,7 +27,7 @@ export class MedskyContract extends Contract {
       accesses.push(accessJSON.toString());
     }
 
-    return accesses;
+    return JSON.stringify(accesses);
   }
 
   @Transaction()
@@ -85,7 +84,6 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction(false)
-  @Returns('string')
   public async ReadRecords(ctx: Context, recordIds: string[]): Promise<string[]> {
     const records: string[] = [];
     for (const recordId of recordIds) {
@@ -98,7 +96,7 @@ export class MedskyContract extends Contract {
       records.push(recordJSON.toString());
     }
 
-    return records;
+    return JSON.stringify(records);
   }
 
   @Transaction()
