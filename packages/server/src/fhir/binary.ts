@@ -124,18 +124,9 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   }
 
   const stream1 = (binarySource as Readable).pipe(new PassThrough());
-  const stream2 = (binarySource as Readable).pipe(new PassThrough());
 
-  const r1 = new Readable();
-  stream1.wrap(r1);
-
-  const r2 = new Readable();
-  stream2.wrap(r2);
-
-  const a = await computeStreamHash(r1);
-  console.log(a);
-  const b = await computeStreamHash(r2);
-  console.log(b);
+  const hash = await computeStreamHash(stream1)
+  console.log(hash);
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
