@@ -93,8 +93,8 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Evaluate Transaction: ReadAccess');
-    const resultBytes = await this.contract.evaluateTransaction('ReadAccess', JSON.stringify(accessIds));
+    console.log('\n--> Evaluate Transaction: ReadAccesses');
+    const resultBytes = await this.contract.evaluateTransaction('ReadAccesses', JSON.stringify(accessIds));
     const resultJson = utf8Decoder.decode(resultBytes);
     return JSON.parse(resultJson);
   }
@@ -104,8 +104,8 @@ export class FabricGateway {
       throw new Error('contract not defined');
     }
 
-    console.log('\n--> Evaluate Transaction: ReadRecord');
-    const resultBytes = await this.contract.evaluateTransaction('ReadRecord', JSON.stringify(ids));
+    console.log('\n--> Evaluate Transaction: ReadRecords');
+    const resultBytes = await this.contract.evaluateTransaction('ReadRecords', JSON.stringify(ids));
     const resultJson = utf8Decoder.decode(resultBytes);
     return JSON.parse(resultJson);
   }

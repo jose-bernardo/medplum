@@ -16,13 +16,19 @@ export class MedskyContract extends Contract {
 
   @Transaction(false)
   @Returns('string')
-  public async ReadAccess(ctx: Context, accessId: string): Promise<string> {
-    const actionJSON = await ctx.stub.getState(accessId);
-    if (actionJSON.length === 0) {
-      throw new Error(`The access log ${accessId} does not exist`);
+  public async ReadAccess(ctx: Context, accessIds: string[]): Promise<string[]> {
+    const accesses: string[] = [];
+    for (const accessId of accessIds) {
+      const accessJSON = await ctx.stub.getState(accessId);
+      if (accessJSON.length === 0) {
+        console.error(`The access log ${accessId} does not exist`);
+        accesses.push('');
+      }
+
+      accesses.push(accessJSON.toString());
     }
 
-    return actionJSON.toString();
+    return accesses;
   }
 
   @Transaction()
@@ -80,13 +86,19 @@ export class MedskyContract extends Contract {
 
   @Transaction(false)
   @Returns('string')
-  public async ReadRecord(ctx: Context, recordId: string): Promise<string> {
-    const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
-    if (recordJSON.length === 0) {
-      throw new Error(`The record ${recordId} does not exist`);
+  public async ReadRecords(ctx: Context, recordIds: string): Promise<string[]> {
+    const records: string[] = [];
+    for (const recordId of recordIds) {
+      const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
+      if (recordJSON.length === 0) {
+        console.error(`The record ${recordId} does not exist`);
+        records.push('');
+      }
+
+      records.push(recordJSON.toString());
     }
 
-    return recordJSON.toString();
+    return records;
   }
 
   @Transaction()
