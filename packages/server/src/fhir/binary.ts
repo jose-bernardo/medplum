@@ -12,17 +12,11 @@ import { BinarySource, getBinaryStorage } from './storage';
 import { appendNewRecord  } from "../fabricgateway";
 import stream from 'stream/promises';
 import {createHash} from "crypto";
-import {PassThrough, Readable} from "node:stream";
+import {PassThrough} from "node:stream";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
-async function computeStreamHash(binary: BinarySource): Promise<string> {
-  const hash = createHash('sha256');
-
-  await stream.pipeline(binary, hash);
-
-  return hash.digest('hex');
-}
+const hash = createHash('sha256');
 
 // Create a binary
 binaryRouter.post('/', asyncWrap(handleBinaryWriteRequest));
@@ -63,14 +57,14 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   const contentType = req.get('Content-Type') as string;
 
-  const stream = getContentStream(req);
-  if (!stream) {
+  const streamm = getContentStream(req);
+  if (!streamm) {
     sendOutcome(res, badRequest('Unsupported content encoding'));
     return;
   }
 
   let binary: Binary | undefined = undefined;
-  let binarySource: BinarySource = stream;
+  let binarySource: BinarySource = streamm;
 
   // From the spec: https://hl7.org/fhir/R4/binary.html#rest
   //
@@ -83,7 +77,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   let binaryContentSpecialCase = false;
 
   if (contentType === ContentType.FHIR_JSON) {
-    const str = await readStreamToString(stream);
+    const str = await readStreamToString(streamm);
     try {
       // The binary handler does *not* use Express body-parser in order to support raw binary data.
       // Therefore, we need to manually parse the body stream as JSON.
@@ -125,18 +119,17 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
   }
 
   const stream1 = new PassThrough();
-  (binarySource as Readable).pipe(stream1);
 
-  const stream2 = new PassThrough();
-  (binarySource as Readable).pipe(stream2);
+  await stream.pipeline(binarySource, hash, stream1);
 
-  const hash = await computeStreamHash(stream1);
+  const hashh = hash.digest('hex');
+
   console.log(hash);
-  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash})
+  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
-    await getBinaryStorage().writeBinary(binary, filename, contentType, stream2);
+    await getBinaryStorage().writeBinary(binary, filename, contentType, stream1);
   }
 
   await sendResponse(req, res, outcome, {
