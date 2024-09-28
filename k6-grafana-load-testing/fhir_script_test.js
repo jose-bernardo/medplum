@@ -33,19 +33,19 @@ const binary = open('fhir-samples/binary.dat');
 const binaryHash = crypto.sha256(binary, 'hex');
 const resourceType = record.resourceType;
 
-const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 180 }, () => uuidv4()));
-const binaryIds = new SharedArray('binary ids', () => Array.from({ length: 20}, () => uuidv4()));
+const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 90 }, () => uuidv4()));
+const binaryIds = new SharedArray('binary ids', () => Array.from({ length: 10}, () => uuidv4()));
 
-function invokeWriteCC(recordId, actionId, hash) {
+function invokeWriteCC(recordId, hash) {
     const command = 'bash'
-    const args = ['./invoke.sh', 'CreateRecord', recordId, actionId, hash];
+    const args = ['./invoke.sh', 'CreateRecord', recordId, hash];
 
     console.log(exec.command(command, args));
 }
 
-function invokeReadCC(recordId, actionId) {
+function invokeReadCC(recordId, accessId) {
     const command = 'bash'
-    const args = ['./invoke.sh', 'ReadRecordTx', recordId, actionId];
+    const args = ['./invoke.sh', 'ReadRecordTx', recordId, accessId];
 
     console.log(exec.command(command, args));
 }
@@ -90,18 +90,16 @@ function read() {
 
 export function setup() {
     for (let i = 0; i < resourceIds.length; i++) {
-        const actionId = uuidv4();
         record.id = resourceIds[i];
         const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
-        invokeWriteCC(resourceIds[i], actionId, recordHash);
+        invokeWriteCC(resourceIds[i], recordHash);
 
         let res = http.post(url + `/fhir/R4/${resourceType}`, JSON.stringify(record), fhirParams);
         console.log(res.status);
     }
 
     for (let i = 0; i < binaryIds.length; i++) {
-        const actionId = uuidv4();
-        invokeWriteCC(binaryIds[i], actionId, binaryHash);
+        invokeWriteCC(binaryIds[i], binaryHash);
 
         let res = http.post(url + `/fhir/R4/Binary?recordId=${binaryIds[i]}`, binary, binaryParams);
         console.log(res.status);

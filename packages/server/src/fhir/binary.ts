@@ -125,7 +125,6 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   stream1.pipe(hash).on('finish', () => {
     const hashh = hash.digest('hex');
-    console.log(hashh);
     appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
   });
 

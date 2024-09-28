@@ -12,6 +12,7 @@ ORG=$((RANDOM % 3 + 1))
 FUNCTION=$1
 RECORD_ID=$2
 ACCESS_ID=$3
+HASH=$3
 
 setGlobals $ORG
 
