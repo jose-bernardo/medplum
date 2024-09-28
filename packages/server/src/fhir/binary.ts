@@ -1,7 +1,7 @@
 import {ContentType, allOk, badRequest, created, isResource} from '@medplum/core';
 import { Binary, OperationOutcome } from '@medplum/fhirtypes';
 import { Request, Response, Router } from 'express';
-import internal from 'stream';
+import internal, { PassThrough } from 'stream';
 import zlib from 'zlib';
 import { asyncWrap } from '../async';
 import { getAuthenticatedContext, getLogger } from '../context';
@@ -12,6 +12,7 @@ import { BinarySource, getBinaryStorage } from './storage';
 import { appendNewRecord  } from "../fabricgateway";
 import {createHash} from "crypto";
 import stream from "stream/promises";
+import {Readable} from "node:stream";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -122,8 +123,18 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
-  const hash = await computeStreamHash(binarySource);
-  appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
+  const binarySource1 = new PassThrough();
+
+  if (binarySource instanceof Readable) {
+    binarySource.pipe(binarySource1);
+
+    const hash = await computeStreamHash(binarySource1);
+
+    console.log(hash);
+
+    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hash});
+  }
+
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
