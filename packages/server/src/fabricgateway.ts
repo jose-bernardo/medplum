@@ -3,7 +3,6 @@ import { MedplumServerConfig } from './config';
 import { globalLogger } from './logger';
 import {getSystemRepo} from "./fhir/repo";
 import {ResourceType} from "@medplum/fhirtypes";
-import {randomUUID} from "crypto";
 
 const gateways: FabricGateway[] = [];
 const matureWriteOps: (NewRecord)[] = [];

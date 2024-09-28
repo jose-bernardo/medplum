@@ -15,7 +15,8 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction(false)
-  public async ReadAccesses(ctx: Context, accessIds: string[]): Promise<string[]> {
+  public async ReadAccesses(ctx: Context, accessIdsJson: string): Promise<string> {
+    const accessIds = JSON.parse(accessIdsJson);
     const accesses: string[] = [];
     for (const accessId of accessIds) {
       const accessJSON = await ctx.stub.getState(accessId);
@@ -84,7 +85,8 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction(false)
-  public async ReadRecords(ctx: Context, recordIds: string[]): Promise<string[]> {
+  public async ReadRecords(ctx: Context, recordIdsJson: string): Promise<string> {
+    const recordIds = JSON.parse(recordIdsJson);
     const records: string[] = [];
     for (const recordId of recordIds) {
       const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
