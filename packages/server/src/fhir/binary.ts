@@ -118,9 +118,12 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
+  const stream2 = new PassThrough();
   const stream1 = new PassThrough();
 
-  await stream.pipeline(binarySource, hash, stream1);
+  await stream.pipeline(binarySource, stream1, stream2);
+
+  await stream.pipeline(stream1, hash);
 
   const hashh = hash.digest('hex');
 
@@ -129,7 +132,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
 
   if (!binaryContentSpecialCase) {
     const filename = undefined;
-    await getBinaryStorage().writeBinary(binary, filename, contentType, stream1);
+    await getBinaryStorage().writeBinary(binary, filename, contentType, stream2);
   }
 
   await sendResponse(req, res, outcome, {
