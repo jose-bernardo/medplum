@@ -137,13 +137,15 @@ async function verifyReadChunk(newAccesses: Access[]): Promise<void> {
   }
 }
 
-async function verifyWrite(newRecord: NewRecord, record: any): Promise<void>  {
-  if (record === '') {
+async function verifyWrite(newRecord: NewRecord, recordJson: any): Promise<void>  {
+  if (recordJson === '') {
     newRecord.blReason = `Record ${newRecord.recordId} not found`;
     throw new Error(`Record ${newRecord.recordId} not found`);
   }
 
-  if (newRecord.hash !== record["Hash"]) {
+  const record = JSON.parse(recordJson);
+
+  if (newRecord.hash !== record.Hash) {
     newRecord.blReason = `Record ${newRecord.recordId} hash does not match`;
     await getSystemRepo().deleteResource(newRecord.resourceType as ResourceType, newRecord.recordId);
     throw new Error(`Record ${newRecord.recordId} hash does not match`);
@@ -152,8 +154,8 @@ async function verifyWrite(newRecord: NewRecord, record: any): Promise<void>  {
   console.log(`Record ${newRecord.recordId} validation success`);
 }
 
-async function verifyRead(newAccess: Access, accessLog: any): Promise<void> {
-  if (accessLog === '') {
+async function verifyRead(newAccess: Access, accessLogJson: any): Promise<void> {
+  if (accessLogJson === '') {
     newAccess.blReason = `Access ${newAccess.accessId} not found`;
     throw new Error(`Access ${newAccess.accessId} not found`);
   }
