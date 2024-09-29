@@ -102,7 +102,8 @@ export class MedskyContract extends Contract {
   }
 
   @Transaction()
-  public async CreateRecords(ctx: Context, recordIds: string[], hashes: string[]): Promise<void> {
+  public async CreateRecords(ctx: Context, recordIdsJson: string, hashes: string[]): Promise<void> {
+    const recordIds = JSON.parse(recordIdsJson);
     if (recordIds.length !== hashes.length) {
       throw new Error(`The number of record ids is different from the number of hashes`);
     }
