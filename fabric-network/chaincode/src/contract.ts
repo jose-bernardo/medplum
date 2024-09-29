@@ -55,7 +55,7 @@ export class MedskyContract extends Contract {
 
   @Transaction()
   @Returns('string')
-  public async ReadRecordsTx(ctx: Context, recordIds: string[], actionId: string): Promise<string> {
+  public async ReadRecordsTx(ctx: Context, recordIds: string[], accessId: string): Promise<string> {
     const records = [];
 
     for (const recordId of recordIds) {
@@ -63,12 +63,12 @@ export class MedskyContract extends Contract {
       if (recordJSON.length === 0) {
         throw new Error(`The record ${recordId} does not exist`);
       }
-      records.push(recordJSON);
+      records.push(JSON.parse(recordJSON.toString()));
     }
 
-    await this.LogAccess(ctx, recordIds, actionId);
+    await this.LogAccess(ctx, recordIds, accessId);
 
-    return records.toString();
+    return JSON.stringify(records);
   }
 
   @Transaction()
