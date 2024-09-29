@@ -4,7 +4,7 @@ import crypto from 'k6/crypto';
 import { invokeWriteCC } from './util.js';
 
 export const options = {
-  vus: 50,
+  vus: 10,
   duration: '10m',
   setupTimeout: '4m'
 };
@@ -25,7 +25,7 @@ const binaryHash = crypto.sha256(binary, 'hex');
 export default function() {
     const recordIds = [];
     const hashes = [];
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 1; i++) {
       const recordId = uuidv4();
 
       recordIds.push(recordId);

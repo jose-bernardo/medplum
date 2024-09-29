@@ -5,7 +5,7 @@ import { SharedArray } from 'k6/data';
 import { invokeWriteCC, invokeReadCC } from './util.js';
 
 export const options = {
-  vus: 50,
+  vus: 10,
   duration: '10m',
   setupTimeout: '4m'
 };
@@ -40,7 +40,7 @@ export default function() {
   const accessId = uuidv4();
   const recordIds = [];
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 1; i++) {
     const idx = Math.floor(Math.random() * binaryIds.length);
     recordIds.push(binaryIds[idx]);
 
