@@ -56,7 +56,7 @@ const tlsCertPath = envOrDefault(
 );
 
 // Gateway peer endpoint.
-const peerEndpoint = envOrDefault('PEER_ENDPOINT', `localhost:7${ORG}01`);
+const peerEndpoint = envOrDefault('PEER_ENDPOINT', `peer0.org${ORG}.example.com:8${ORG}01`);
 
 // Gateway peer SSL host name override.
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', `peer0.org${ORG}.example.com`);
@@ -86,15 +86,15 @@ async function main() {
 
   const contract = network.getContract(chaincodeName);
 
-  if (process.argv[1] === 'CreateRecords') {
-    const recordIds = JSON.parse(Buffer.from(process.argv[2], 'base64').toString('utf-8'));
-    const hashes = JSON.parse(Buffer.from(process.argv[3], 'base64').toString('utf-8'));
+  if (process.argv[2] === 'CreateRecords') {
+    const recordIds = JSON.parse(Buffer.from(process.argv[3], 'base64').toString('utf-8'));
+    const hashes = JSON.parse(Buffer.from(process.argv[4], 'base64').toString('utf-8'));
 
-    await createRecords(contract, recordIds, JSON.stringify(hashes));
+    await createRecords(contract, JSON.stringify(recordIds), JSON.stringify(hashes));
   } else if (process.argv[1] === 'ReadRecordsTx') {
-    const recordIds = JSON.parse(Buffer.from(process.argv[2], 'base64').toString('utf-8'));
-    const accessId = process.argv[3];
-    await readRecordsTx(contract, recordIds, accessId);
+    const recordIds = JSON.parse(Buffer.from(process.argv[3], 'base64').toString('utf-8'));
+    const accessId = process.argv[4];
+    await readRecordsTx(contract, JSON.stringify(recordIds), accessId);
   } else {
     throw new Error('Unknown contract function');
   }

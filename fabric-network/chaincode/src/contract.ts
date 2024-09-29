@@ -55,9 +55,9 @@ export class MedskyContract extends Contract {
 
   @Transaction()
   @Returns('string')
-  public async ReadRecordsTx(ctx: Context, recordIds: string[], accessId: string): Promise<string> {
+  public async ReadRecordsTx(ctx: Context, recordIdsJson: string, accessId: string): Promise<string> {
     const records = [];
-
+    const recordIds = JSON.parse(recordIdsJson);
     for (const recordId of recordIds) {
       const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
       if (recordJSON.length === 0) {
