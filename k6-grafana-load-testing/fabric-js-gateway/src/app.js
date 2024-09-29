@@ -91,7 +91,7 @@ async function main() {
     const hashes = JSON.parse(Buffer.from(process.argv[4], 'base64').toString('utf-8'));
 
     await createRecords(contract, JSON.stringify(recordIds), JSON.stringify(hashes));
-  } else if (process.argv[1] === 'ReadRecordsTx') {
+  } else if (process.argv[2] === 'ReadRecordsTx') {
     const recordIds = JSON.parse(Buffer.from(process.argv[3], 'base64').toString('utf-8'));
     const accessId = process.argv[4];
     await readRecordsTx(contract, JSON.stringify(recordIds), accessId);

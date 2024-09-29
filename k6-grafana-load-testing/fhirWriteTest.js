@@ -1,9 +1,8 @@
 import http from 'k6/http';
-import exec from 'k6/x/exec';
 import { sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import encoding from 'k6/encoding';
+import { invokeWriteCC } from './util'
 
 export const options = {
   vus: 25,
@@ -12,7 +11,7 @@ export const options = {
 };
 
 const url = 'http://10.15.0.11:5555';
-const token = process.env.TOKEN;
+const token = __ENV.TOKEN;
 
 const fhirParams = {
   headers: {
@@ -24,16 +23,6 @@ const fhirParams = {
 const record = JSON.parse(open('fhir-samples/fhir.json'));
 const resourceType = record.resourceType;
 
-function invokeWriteCC(recordIds, hashes) {
-  const encRecordIds = encoding.b64encode(JSON.stringify(recordIds));
-  const encHashes = encoding.b64encode(JSON.stringify(hashes));
-
-  const command = 'bash'
-  const args = ['./invoke.sh', 'CreateRecord', encRecordIds, encHashes];
-
-  console.log(exec.command(command, args));
-}
-
 export default function() {
   const recordIds = [];
   const hashes = []
@@ -43,7 +32,7 @@ export default function() {
 
     record.id = recordId;
     const recordHash = crypto.sha256(JSON.stringify(record), 'hex');
-    invokeWriteCC(recordId, recordHash);
+    hashes.push(recordHash);
 
     let res = http.post(url + `/fhir/R4/${resourceType}`, JSON.stringify(record), fhirParams);
     console.log(res.status);

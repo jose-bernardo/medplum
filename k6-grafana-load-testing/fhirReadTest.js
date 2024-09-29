@@ -1,10 +1,9 @@
 import http from 'k6/http';
-import exec from 'k6/x/exec';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
 import { sleep } from 'k6';
 import { SharedArray } from 'k6/data';
-import encoding from 'k6/encoding';
+import { invokeWriteCC, invokeReadCC } from './util'
 
 export const options = {
   vus: 25,
@@ -13,7 +12,7 @@ export const options = {
 };
 
 const url = 'http://10.15.0.11:5555';
-const token = process.env.TOKEN;
+const token = __ENV.TOKEN;
 
 const fhirParams = {
   headers: {
@@ -24,27 +23,7 @@ const fhirParams = {
 
 const record = JSON.parse(open('fhir-samples/fhir.json'));
 const resourceType = record.resourceType;
-
 const resourceIds = new SharedArray('resource ids', () => Array.from({ length: 500 }, () => uuidv4()));
-
-function invokeWriteCC(recordIds, hashes) {
-  const encRecordIds = encoding.b64encode(JSON.stringify(recordIds));
-  const encHashes = encoding.b64encode(JSON.stringify(hashes));
-
-  const command = 'bash'
-  const args = ['./invoke.sh', 'CreateRecords', encRecordIds, encHashes];
-
-  exec.command(command, args);
-}
-
-function invokeReadCC(recordIds, accessId) {
-  const encRecordIds = encoding.b64encode(JSON.stringify(recordIds));
-
-  const command = 'bash'
-  const args = ['./invoke.sh', 'ReadRecordsTx', encRecordIds, accessId];
-
-  exec.command(command, args);
-}
 
 export function setup() {
   const recordHashes = [];
