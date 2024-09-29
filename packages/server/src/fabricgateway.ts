@@ -110,8 +110,8 @@ async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
     try {
       await verifyWrite(newRecord, ledgerChunk[i]);
     } catch (err) {
+      console.error(err);
       if (!newRecord.blReason) {
-        console.error(err);
         newRecord.blReason = JSON.stringify(err);
       }
       //await getFabricGateway().logBadAction(randomUUID(), newRecord.blReason);
@@ -143,7 +143,7 @@ async function verifyWrite(newRecord: NewRecord, record: any): Promise<void>  {
     throw new Error(`Record ${newRecord.recordId} not found`);
   }
 
-  if (newRecord.hash !== record.Hash) {
+  if (newRecord.hash !== record["Hash"]) {
     newRecord.blReason = `Record ${newRecord.recordId} hash does not match`;
     await getSystemRepo().deleteResource(newRecord.resourceType as ResourceType, newRecord.recordId);
     throw new Error(`Record ${newRecord.recordId} hash does not match`);
