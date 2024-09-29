@@ -23,9 +23,9 @@ export class MedskyContract extends Contract {
       if (accessJSON.length === 0) {
         console.error(`The access log ${accessId} does not exist`);
         accesses.push('');
+      } else {
+        accesses.push(accessJSON.toString());
       }
-
-      accesses.push(accessJSON.toString());
     }
 
     return JSON.stringify(accesses);
@@ -59,11 +59,13 @@ export class MedskyContract extends Contract {
     const records = [];
     const recordIds = JSON.parse(recordIdsJson);
     for (const recordId of recordIds) {
-      const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
+      const recordJSON = await ctx.stub.getState(recordId);
       if (recordJSON.length === 0) {
-        throw new Error(`The record ${recordId} does not exist`);
+        records.push('');
+        console.error(`The record ${recordId} does not exist`);
+      } else {
+        records.push(JSON.parse(recordJSON.toString()));
       }
-      records.push(JSON.parse(recordJSON.toString()));
     }
 
     await this.LogAccess(ctx, recordIds, accessId);
@@ -74,7 +76,7 @@ export class MedskyContract extends Contract {
   @Transaction()
   @Returns('string')
   public async ReadRecordTx(ctx: Context, recordId: string, accessId: string): Promise<string> {
-    const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
+    const recordJSON = await ctx.stub.getState(recordId);
     if (recordJSON.length === 0) {
       throw new Error(`The record ${recordId} does not exist`);
     }
@@ -89,7 +91,7 @@ export class MedskyContract extends Contract {
     const recordIds = JSON.parse(recordIdsJson);
     const records: string[] = [];
     for (const recordId of recordIds) {
-      const recordJSON = await ctx.stub.getState(recordId); // get the asset from chaincode state
+      const recordJSON = await ctx.stub.getState(recordId);
       if (recordJSON.length === 0) {
         console.error(`The record ${recordId} does not exist`);
         records.push('');

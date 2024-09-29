@@ -144,7 +144,7 @@ async function createRecords(contract, recordIds, hashes) {
 }
 
 async function readRecordsTx(contract, recordIds, accessId) {
-  await contract.evaluateTransaction(
+  await contract.submitTransaction(
     'ReadRecordsTx',
     recordIds,
     accessId
