@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { invokeWriteCC } from './util'
+import { invokeWriteCC } from './util.js'
 
 export const options = {
   vus: 25,

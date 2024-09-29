@@ -3,7 +3,7 @@ import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
 import { sleep } from 'k6';
 import { SharedArray } from 'k6/data';
-import { invokeWriteCC, invokeReadCC } from './util'
+import { invokeWriteCC, invokeReadCC } from './util.js'
 
 export const options = {
   vus: 25,
