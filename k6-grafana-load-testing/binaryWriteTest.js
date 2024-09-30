@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { invokeWriteCC } from './util.js';
+import { generateWebReport, invokeWriteCC } from './util.js';
 
 export const options = {
   vus: __ENV.VUS,
@@ -36,4 +36,8 @@ export default function() {
     }
 
     invokeWriteCC(recordIds, hashes);
+}
+
+export function handleSummary(data) {
+  return generateWebReport('binaryWrite.html', data);
 }
