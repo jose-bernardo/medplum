@@ -24,6 +24,8 @@ echo "##########################################"
 echo "####### Starting System Evaluation #######"
 echo "##########################################"
 
+mkdir -p reports
+
 pre_test_warmup 10m
 
 export VUS=50
@@ -31,7 +33,7 @@ export DURATION=65m
 
 infoln "Initializing FHIR WRITE test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
-./k6 run ./fhirWriteTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/fhirWriteTest.html ./k6 run ./fhirWriteTest.js
 infoln "End Time: $(date)" >> log.txt
 infoln " -------------------- "
 
@@ -42,7 +44,7 @@ export DURATION=65m
 
 infoln "Initializing FHIR READ test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
-./k6 run ./fhirReadTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/fhirReadTest.html ./k6 run ./fhirReadTest.js
 infoln "End Time: $(date)" >> log.txt
 infoln " -------------------- "
 
@@ -53,7 +55,7 @@ export DURATION=65m
 
 infoln "Initializing BINARY READ test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
-./k6 run ./binaryReadTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryReadTest.js
 infoln "End Time: $(date)"
 infoln " -------------------- "
 
@@ -64,7 +66,7 @@ export DURATION=15m
 
 infoln "Initializing BINARY WRITE test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
-./k6 run ./binaryWriteTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryWriteTest.js
 infoln "End Time: $(date)"
 infoln " -------------------- "
 

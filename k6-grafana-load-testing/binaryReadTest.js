@@ -50,7 +50,3 @@ export default function() {
 
   invokeReadCC(recordIds, accessId);
 }
-
-export function handleSummary(data) {
-  return generateWebReport('binaryWrite.html', data);
-}

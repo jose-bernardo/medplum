@@ -42,7 +42,3 @@ export default function() {
 
   invokeWriteCC(recordIds, hashes);
 }
-
-export function handleSummary(data) {
-  return generateWebReport('fhirWrite.html', data);
-}

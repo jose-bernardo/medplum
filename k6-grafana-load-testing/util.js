@@ -20,9 +20,3 @@ export function invokeReadCC(recordIds, accessId) {
 
   exec.command(command, args);
 }
-
-export function generateWebReport(filename, data) {
-  return {
-    filename: htmlReport(data),
-  };
-}
