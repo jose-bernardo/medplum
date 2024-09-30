@@ -27,28 +27,6 @@
   "links": [],
   "panels": [
     {
-      "datasource": "Prometheus",
-      "editable": true,
-      "error": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 11,
-      "maxPerRow": 6,
-      "options": {
-        "content": "",
-        "mode": "html"
-      },
-      "pluginVersion": "8.1.0",
-      "repeat": "node",
-      "style": {},
-      "title": "$node",
-      "type": "text"
-    },
-    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
