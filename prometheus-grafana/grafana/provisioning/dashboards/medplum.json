@@ -31,7 +31,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
       "decimals": 3,
       "editable": true,
       "error": false,
@@ -222,7 +225,10 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "Prometheus",
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -308,7 +314,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
       "decimals": 2,
       "editable": true,
       "error": false,
@@ -527,7 +536,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
       "editable": true,
       "error": false,
       "fieldConfig": {
@@ -631,7 +643,10 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
       "decimals": 3,
       "editable": true,
       "error": false
@@ -649,7 +664,10 @@
         "allFormat": "glob",
         "allValue": null,
         "current": {},
-        "datasource": "Prometheus",
+        "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
         "definition": "",
         "description": null,
         "error": null,
