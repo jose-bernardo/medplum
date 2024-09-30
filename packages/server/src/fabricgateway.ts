@@ -88,17 +88,17 @@ export async function closeFabricGateway(): Promise<void> {
 }
 
 async function verifyLedger(): Promise<void> {
-  matureWriteOps.push(...freshWriteOps.splice(0, freshWriteOps.length/2));
   for (let i = 0; i < matureWriteOps.length; i += chunkSize) {
     const chunk = matureWriteOps.splice(i, i + chunkSize);
     await verifyWriteChunk(chunk);
   }
+  matureWriteOps.push(...freshWriteOps.splice(0, freshWriteOps.length));
 
-  matureReadOps.push(...freshReadOps.splice(0, freshReadOps.length/2));
   for (let i = 0; i < matureReadOps.length; i += chunkSize) {
     const chunk = matureReadOps.splice(i, i + chunkSize);
     await verifyReadChunk(chunk);
   }
+  matureReadOps.push(...freshReadOps.splice(0, freshReadOps.length));
 }
 
 async function verifyWriteChunk(newRecords: NewRecord[]): Promise<void> {
