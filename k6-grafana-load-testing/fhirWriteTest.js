@@ -5,8 +5,8 @@ import crypto from 'k6/crypto';
 import { invokeWriteCC } from './util.js'
 
 export const options = {
-  vus: 25,
-  duration: '10m',
+  vus: __ENV.VUS,
+  duration: __ENV.DURATION,
   setupTimeout: '4m'
 };
 
