@@ -127,7 +127,7 @@ export function sendLoginCookie(res: Response, login: Login): void {
   if (login.client) {
     const cookieName = 'medplum-' + resolveId(login.client);
     res.cookie(cookieName, login.cookie as string, {
-      maxAge: 3600 * 1000 * 10000 * 24 * 30,
+      maxAge: 3600 * 1000 * 10000,
       sameSite: 'none',
       secure: true,
       httpOnly: true,

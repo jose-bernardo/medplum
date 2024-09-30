@@ -614,7 +614,7 @@ async function sendTokenResponse(
 
   res.status(200).json({
     token_type: 'Bearer',
-    expires_in: 3600,
+    expires_in: 3600 * 24 * 30,
     scope: login.scope,
     id_token: tokens.idToken,
     access_token: tokens.accessToken,
