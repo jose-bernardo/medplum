@@ -155,14 +155,8 @@ case $2 in
   medium)
     export NETWORK_SIZE="medium"
     COMPOSE_FILES="-f compose/compose-medium.yaml -f compose/docker/docker-compose-medium.yaml"
-    FABRIC_CFG_PATH=${PWD}/configtx-medium
+    FABRIC_CFG_PATH=${PWD}/configtx-medium-2
     infoln "Using MEDIUM network"
-    ;;
-  large)
-    export NETWORK_SIZE="large"
-    COMPOSE_FILES="-f compose/compose-large.yaml -f compose/docker/docker-compose-large.yaml"
-    FABRIC_CFG_PATH=${PWD}/configtx-large
-    infoln "Using LARGE network"
     ;;
   raft)
     export NETWORK_SIZE="medium"

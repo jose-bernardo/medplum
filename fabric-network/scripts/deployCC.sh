@@ -71,7 +71,12 @@ parsePeerConnectionParameters() {
   PEERS=""
   while [ "$#" -gt 0 ]; do
     setGlobals $1
-    PEER="peer0.org$1"
+    X=$(($1 % 10))
+    if [[ $1 -gt 10 ]]; then
+      PEER="peer1.org$X"
+    else
+      PEER="peer0.org$X"
+    fi
     if [ -z "$PEERS" ]
     then
 	    PEERS="$PEER"
@@ -79,7 +84,7 @@ parsePeerConnectionParameters() {
 	    PEERS="$PEERS $PEER"
     fi
     PEER_CONN_PARMS=("${PEER_CONN_PARMS[@]}" --peerAddresses $CORE_PEER_ADDRESS)
-    CA=PEER0_ORG$1_CA
+    CA=PEER0_ORG$X\_CA
     TLSINFO=(--tlsRootCertFiles "${!CA}")
     PEER_CONN_PARMS=("${PEER_CONN_PARMS[@]}" "${TLSINFO[@]}")
     shift
@@ -126,130 +131,49 @@ function queryCommitted() {
   fi
 }
 
-function initLedger() {
-  infoln "Invoking InitLedger"
-
-  FILE_SIZE=$2
-
-  ORG=$1
-  setGlobals $ORG
-
-  set -x
-  if [[ $NETWORK_SIZE = "medium" ]]; then
-    peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
-      --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-      -C mychannel -n medsky \
-      --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
-      -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
-    res=$?
-  elif [[ $NETWORK_SIZE = "large" ]]; then
-    peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
-      --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-      -C mychannel -n medsky \
-      --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8301 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8401 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org4.example.com/peers/peer0.org4.example.com/tls/ca.crt" \
-      --peerAddresses localhost:8501 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org5.example.com/peers/peer0.org5.example.com/tls/ca.crt" \
-      -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
-      res=$?
-  else
-   peer chaincode invoke -o localhost:7011 --ordererTLSHostnameOverride orderer.example.com \
-     --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-     -C mychannel -n medsky \
-     --peerAddresses localhost:8101 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
-     --peerAddresses localhost:8201 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-     -c "{\"function\":\"InitLedger\",\"Args\":[\"$FILE_SIZE\"]}"
-     res=$?
-  fi
-  { set +x; } 2>/dev/null
-
-  verifyResult $res "InitLedger failed"
-  successln "Transaction submit successful"
-}
-
 infoln "Install chaincode on peer0.org1..."
 installChaincode 1
+infoln "Install chaincode on peer1.org1..."
+installChaincode 11
 infoln "Install chaincode on peer0.org2..."
 installChaincode 2
+infoln "Install chaincode on peer1.org2..."
+installChaincode 12
 infoln "Install chaincode on peer0.org3..."
 installChaincode 3
-approveForMyOrg 1
-approveForMyOrg 2
-approveForMyOrg 3
-queryInstalled 1
+infoln "Install chaincode on peer0.org3..."
+installChaincode 13
 
-if [[ $NETWORK_SIZE = "small" ]]; then
-  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-  commitChaincodeDefinition 1 2 3
-  queryCommitted 1
-  queryCommitted 2
-  queryCommitted 3
-fi
-
-if [[ $NETWORK_SIZE = "medium" ]]; then
   infoln "Install chaincode on peer0.org4..."
   installChaincode 4
+  infoln "Install chaincode on peer1.org4..."
+  installChaincode 14
   infoln "Install chaincode on peer0.org5..."
   installChaincode 5
+  infoln "Install chaincode on peer1.org5..."
+  installChaincode 15
+  #approveForMyOrg 1
+  approveForMyOrg 2
+  approveForMyOrg 3
   approveForMyOrg 4
   approveForMyOrg 5
+  queryInstalled 1
   checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
   checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
   checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
   checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
   checkCommitReadiness 5 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true"
-  commitChaincodeDefinition 1 2 3 4 5
+  commitChaincodeDefinition 1 11 2 12 3 13 4 14 5 15
   queryCommitted 1
+  queryCommitted 11
   queryCommitted 2
+  queryCommitted 12
   queryCommitted 3
+  queryCommitted 13
   queryCommitted 4
+  queryCommitted 14
   queryCommitted 5
-fi
-
-if [[ $NETWORK_SIZE = "large" ]]; then
-  infoln "Install chaincode on peer0.org4..."
-  installChaincode 4
-  infoln "Install chaincode on peer0.org5..."
-  installChaincode 5
-  infoln "Install chaincode on peer0.org6..."
-  installChaincode 6
-  infoln "Install chaincode on peer0.org7..."
-  installChaincode 7
-  infoln "Install chaincode on peer0.org8..."
-  installChaincode 8
-  infoln "Install chaincode on peer0.org9..."
-  installChaincode 9
-  approveForMyOrg 4
-  approveForMyOrg 5
-  approveForMyOrg 6
-  approveForMyOrg 7
-  approveForMyOrg 8
-  approveForMyOrg 9
-  checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 5 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 6 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 7 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 8 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  checkCommitReadiness 9 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true" "\"Org4MSP\": true" "\"Org5MSP\": true" "\"Org6MSP\": true" "\"Org7MSP\": true" "\"Org8MSP\": true" "\"Org9MSP\": true"
-  commitChaincodeDefinition 1 2 3 4 5 6 7 8 9
-  queryCommitted 1
-  queryCommitted 2
-  queryCommitted 3
-  queryCommitted 4
-  queryCommitted 5
-  queryCommitted 6
-  queryCommitted 7
-  queryCommitted 8
-  queryCommitted 9
-fi
+  queryCommitted 15
 
 rm log.txt
 

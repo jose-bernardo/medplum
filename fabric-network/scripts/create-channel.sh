@@ -79,29 +79,19 @@ createChannelGenesisBlock
 createChannel
 
 joinChannel 1
+joinChannel 11
 joinChannel 2
+joinChannel 12
 joinChannel 3
+joinChannel 13
+  joinChannel 4
+  joinChannel 14
+  joinChannel 5
+  joinChannel 15
 
 setAnchorPeer 1
 setAnchorPeer 2
 setAnchorPeer 3
 
-if [[ $NETWORK_SIZE = "medium" || $NETWORK_SIZE = "large" ]]; then
-  joinChannel 4
-  joinChannel 5
-
   setAnchorPeer 4
   setAnchorPeer 5
-fi
-
-if [[ $NETWORK_SIZE = "large" ]]; then
-  joinChannel 6
-  joinChannel 7
-  joinChannel 8
-  joinChannel 9
-
-  setAnchorPeer 6
-  setAnchorPeer 7
-  setAnchorPeer 8
-  setAnchorPeer 9
-fi

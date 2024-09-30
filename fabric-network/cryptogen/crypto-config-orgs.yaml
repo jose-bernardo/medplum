@@ -6,7 +6,7 @@ PeerOrgs:
     Domain: org1.example.com
     EnableNodeOUs: true
     Template:
-      Count: 1
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -15,7 +15,7 @@ PeerOrgs:
     Domain: org2.example.com
     EnableNodeOUs: true
     Template:
-      Count: 1
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -24,7 +24,7 @@ PeerOrgs:
     Domain: org3.example.com
     EnableNodeOUs: true
     Template:
-      Count: 1
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -33,7 +33,7 @@ PeerOrgs:
     Domain: org4.example.com
     EnableNodeOUs: true
     Template:
-      Count: 1
+      Count: 2
       SANS:
         - localhost
     Users:
@@ -42,43 +42,7 @@ PeerOrgs:
     Domain: org5.example.com
     EnableNodeOUs: true
     Template:
-      Count: 1
-      SANS:
-        - localhost
-    Users:
-      Count: 1
-  - Name: Org6
-    Domain: org6.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
-      SANS:
-        - localhost
-    Users:
-      Count: 1
-  - Name: Org7
-    Domain: org7.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
-      SANS:
-        - localhost
-    Users:
-      Count: 1
-  - Name: Org8
-    Domain: org8.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
-      SANS:
-        - localhost
-    Users:
-      Count: 1
-  - Name: Org9
-    Domain: org9.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 1
+      Count: 2
       SANS:
         - localhost
     Users:
