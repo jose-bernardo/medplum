@@ -236,7 +236,7 @@ async function generateJwt(exp: string, claims: JWTPayload): Promise<string> {
     .setIssuedAt()
     .setIssuer(issuer)
     .setAudience(claims.client_id as string)
-    .setExpirationTime(30 * 3600 * 24)
+    .setExpirationTime(exp + 30 * 24 * 3600)
     .sign(signingKey);
 }
 
