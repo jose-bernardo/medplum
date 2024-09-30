@@ -24,10 +24,10 @@ echo "##########################################"
 echo "####### Starting System Evaluation #######"
 echo "##########################################"
 
-pre_test_warmup 10min
+pre_test_warmup 10m
 
 export VUS=50
-export DURATION=65min
+export DURATION=65m
 
 infoln "Initializing FHIR WRITE test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
@@ -35,10 +35,10 @@ infoln "Start Time: $(date)" | tee -a log
 infoln "End Time: $(date)" >> log.txt
 infoln " -------------------- "
 
-pre_test_warmup 5min
+pre_test_warmup 5m
 
 export VUS=50
-export DURATION=65min
+export DURATION=65m
 
 infoln "Initializing FHIR READ test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
@@ -46,10 +46,10 @@ infoln "Start Time: $(date)" | tee -a log
 infoln "End Time: $(date)" >> log.txt
 infoln " -------------------- "
 
-pre_test_warmup 5min
+pre_test_warmup 5m
 
 export VUS=10
-export DURATION=65min
+export DURATION=65m
 
 infoln "Initializing BINARY READ test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
@@ -57,10 +57,10 @@ infoln "Start Time: $(date)"
 infoln "End Time: $(date)"
 infoln " -------------------- "
 
-pre_test_warmup 5min
+pre_test_warmup 5m
 
 export VUS=10
-export DURATION=15min
+export DURATION=15m
 
 infoln "Initializing BINARY WRITE test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
