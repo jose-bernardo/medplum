@@ -1,4 +1,36 @@
 {
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.1.0"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph (old)",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -26,6 +58,31 @@
   "iteration": 1640091409300,
   "links": [],
   "panels": [
+    {
+      "datasource":  {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+      "editable": true,
+      "error": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 11,
+      "maxPerRow": 6,
+      "options": {
+        "content": "",
+        "mode": "html"
+      },
+      "pluginVersion": "8.1.0",
+      "repeat": "node",
+      "style": {},
+      "title": "$node",
+      "type": "text"
+    },
     {
       "aliasColors": {},
       "bars": false,
@@ -530,126 +587,6 @@
         "align": false,
         "alignLevel": null
       }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource":  {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-      "editable": true,
-      "error": false,
-      "fieldConfig": {
-        "defaults": {
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "grid": {},
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 17
-      },
-      "hiddenSeries": false,
-      "id": 13,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 2,
-      "links": [],
-      "maxPerRow": 6,
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "8.1.0",
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "repeat": "node",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "node_load1{instance=~\"$node\"}",
-          "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "load",
-          "metric": "",
-          "refId": "A",
-          "step": 1200,
-          "target": ""
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Load",
-      "tooltip": {
-        "msResolution": false,
-        "shared": true,
-        "sort": 0,
-        "value_type": "cumulative"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource":  {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-      "decimals": 3,
-      "editable": true,
-      "error": false
     }
   ],
   "refresh": "",
@@ -737,7 +674,7 @@
             "value": "30m"
           }
         ],
-        "query": "30s,1m,2m,3m,5m,10m,30m",
+        "query": "1m,2m,3m,5m,10m,30m",
         "queryValue": "",
         "refresh": 2,
         "skipUrlSync": false,
@@ -764,7 +701,6 @@
       "1d"
     ],
     "time_options": [
-      "1m",
       "5m",
       "15m",
       "1h",
