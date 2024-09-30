@@ -152,7 +152,7 @@ installChaincode 13
   installChaincode 5
   infoln "Install chaincode on peer1.org5..."
   installChaincode 15
-  #approveForMyOrg 1
+  approveForMyOrg 1
   approveForMyOrg 2
   approveForMyOrg 3
   approveForMyOrg 4
