@@ -27,7 +27,7 @@ echo "##########################################"
 pre_test_warmup 10min
 
 export VUS=50
-export DURATION=35min
+export DURATION=65min
 
 infoln "Initializing FHIR WRITE test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
@@ -36,6 +36,9 @@ infoln "End Time: $(date)" >> log.txt
 infoln " -------------------- "
 
 pre_test_warmup 5min
+
+export VUS=50
+export DURATION=65min
 
 infoln "Initializing FHIR READ test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)" | tee -a log
@@ -46,6 +49,7 @@ infoln " -------------------- "
 pre_test_warmup 5min
 
 export VUS=10
+export DURATION=65min
 
 infoln "Initializing BINARY READ test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
@@ -55,6 +59,7 @@ infoln " -------------------- "
 
 pre_test_warmup 5min
 
+export VUS=10
 export DURATION=15min
 
 infoln "Initializing BINARY WRITE test with $VUS during $DURATION"
