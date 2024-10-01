@@ -19,9 +19,30 @@ scrape_configs:
   - job_name: "peer0_org2"
     static_configs:
       - targets: ["peer0.org2.example.com:8202"]
+  - job_name: "peer0_org3"
+    static_configs:
+      - targets: [ "peer0.org3.example.com:8302" ]
+  - job_name: "peer0_org4"
+    static_configs:
+      - targets: [ "peer0.org4.example.com:8402" ]
   - job_name: "peer0_org5"
     static_configs:
-      - targets: [ "peer0.org2.example.com:8302" ]
+      - targets: [ "peer0.org5.example.com:8502" ]
+  - job_name: "peer1_org1"
+    static_configs:
+      - targets: [ "peer1.org1.example.com:8112" ]
+  - job_name: "peer1_org2"
+    static_configs:
+      - targets: [ "peer1.org2.example.com:8212" ]
+  - job_name: "peer1_org3"
+    static_configs:
+      - targets: [ "peer1.org3.example.com:8312" ]
+  - job_name: "peer1_org4"
+    static_configs:
+      - targets: [ "peer1.org4.example.com:8412" ]
+  - job_name: "peer1_org5"
+    static_configs:
+      - targets: [ "peer1.org5.example.com:8512" ]
   - job_name: cadvisor
     scrape_interval: 5s
     static_configs:
