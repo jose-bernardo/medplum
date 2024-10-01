@@ -922,19 +922,6 @@
       "yaxis": {
         "align": false
       }
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 45
-      },
-      "id": 45,
-      "panels": [],
-      "title": "Chaincode Metrics",
-      "type": "row"
     }
   ],
   "refresh": "5s",
