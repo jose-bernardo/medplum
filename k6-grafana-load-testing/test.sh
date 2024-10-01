@@ -2,13 +2,11 @@ function pre_test_warmup() {
   echo "Sending warmup load..."
 
   export DURATION=$1
-  export VUS=10
-  echo "Sending binary files"
-  ./k6 run ./binaryWriteTest.js > /dev/null &
-
   echo "Sending FHIR data"
   export VUS=40
   ./k6 run ./fhirWriteTest.js > /dev/null
+
+  sleep 30
 
   echo "Finished warmup"
 }
@@ -22,16 +20,15 @@ export TOKEN="eyJhbGciOiJSUzI1NiIsImtpZCI6IjY3M2ZmYTYxLWI4MDctNGQ2Ni1hZWY4LTYxMm
 
 mkdir -p reports
 
-
 function execFhirWriteTest() {
 pre_test_warmup 5m
 export VUS=50
 export DURATION=65m
 
 infoln "Initializing FHIR WRITE test with $VUS VUs during $DURATION"
-infoln "Start Time: $(date)" | tee -a log
-K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/fhirWriteTest.html ./k6 run ./fhirWriteTest.js
-infoln "End Time: $(date)" >> log.txt
+infoln "Start Time: $(date)"
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_PORT=9997 K6_WEB_DASHBOARD_EXPORT=reports/fhirWriteTest.html ./k6 run ./fhirWriteTest.js
+infoln "End Time: $(date)"
 infoln " -------------------- "
 }
 
@@ -42,9 +39,9 @@ export VUS=50
 export DURATION=65m
 
 infoln "Initializing FHIR READ test with $VUS VUs during $DURATION"
-infoln "Start Time: $(date)" | tee -a log
-K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/fhirReadTest.html ./k6 run ./fhirReadTest.js
-infoln "End Time: $(date)" >> log.txt
+infoln "Start Time: $(date)"
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_PORT=9997 K6_WEB_DASHBOARD_EXPORT=reports/fhirReadTest.html ./k6 run ./fhirReadTest.js
+infoln "End Time: $(date)"
 infoln " -------------------- "
 }
 
@@ -56,7 +53,7 @@ export DURATION=65m
 
 infoln "Initializing BINARY READ test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
-K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryReadTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_PORT=9997 K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryReadTest.js
 infoln "End Time: $(date)"
 infoln " -------------------- "
 }
@@ -69,7 +66,7 @@ export DURATION=15m
 
 infoln "Initializing BINARY WRITE test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
-K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryWriteTest.js
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_PORT=9997 K6_WEB_DASHBOARD_EXPORT=reports/binaryWriteTest.html ./k6 run ./binaryWriteTest.js
 infoln "End Time: $(date)"
 infoln " -------------------- "
 }
@@ -90,10 +87,8 @@ else
   execFhirReadTest
   execFhirWriteTest
   execBinaryReadTest
-  execBinaryWriteTest
 fi
 
 echo "#########################################"
 echo "####### Ending System Evaluation ########"
 echo "#########################################"
-

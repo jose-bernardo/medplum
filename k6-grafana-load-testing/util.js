@@ -1,6 +1,5 @@
 import exec from 'k6/x/exec';
 import encoding from 'k6/encoding';
-import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 
 export function invokeWriteCC(recordIds, hashes) {
   const encRecordIds = encoding.b64encode(JSON.stringify(recordIds));
