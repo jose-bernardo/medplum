@@ -77,7 +77,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 60000);
+  setInterval(verifyLedger, 120000);
 }
 
 export async function closeFabricGateway(): Promise<void> {

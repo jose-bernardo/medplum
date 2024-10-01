@@ -1,9 +1,8 @@
 import http from 'k6/http';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { sleep } from 'k6';
 import { SharedArray } from 'k6/data';
-import { invokeWriteCC, invokeReadCC, generateWebReport } from './util.js';
+import { invokeWriteCC, invokeReadCC } from './util.js';
 
 export const options = {
   vus: __ENV.VUS,
@@ -45,7 +44,6 @@ export default function() {
   const accessId = uuidv4();
 
   for (let i = 0; i < 20; i++) {
-    sleep(Math.random() * 3);
     const idx = Math.floor(Math.random() * resourceIds.length);
     recordIds.push(resourceIds[idx]);
 

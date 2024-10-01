@@ -1,8 +1,7 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { generateWebReport, invokeWriteCC } from './util.js';
+import { invokeWriteCC } from './util.js';
 
 export const options = {
   vus: __ENV.VUS,
@@ -27,7 +26,6 @@ export default function() {
   const recordIds = [];
   const hashes = []
   for (let i = 0; i < 20; i++) {
-    sleep(Math.random() * 5);
     const recordId = uuidv4();
 
     record.id = recordId;

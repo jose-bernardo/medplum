@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
 import { SharedArray } from 'k6/data';
-import { invokeWriteCC, invokeReadCC, generateWebReport } from './util.js';
+import { invokeWriteCC, invokeReadCC } from './util.js';
 
 export const options = {
   vus: __ENV.VUS,
@@ -40,7 +40,7 @@ export default function() {
   const accessId = uuidv4();
   const recordIds = [];
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 5; i++) {
     const idx = Math.floor(Math.random() * binaryIds.length);
     recordIds.push(binaryIds[idx]);
 

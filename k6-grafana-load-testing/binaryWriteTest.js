@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import crypto from 'k6/crypto';
-import { generateWebReport, invokeWriteCC } from './util.js';
+import { invokeWriteCC } from './util.js';
 
 export const options = {
   vus: __ENV.VUS,
@@ -25,7 +25,7 @@ const binaryHash = crypto.sha256(binary, 'hex');
 export default function() {
     const recordIds = [];
     const hashes = [];
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 5; i++) {
       const recordId = uuidv4();
 
       recordIds.push(recordId);
