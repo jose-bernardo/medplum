@@ -95,9 +95,9 @@ export class MedskyContract extends Contract {
       if (recordJSON.length === 0) {
         console.error(`The record ${recordId} does not exist`);
         records.push('');
+      } else {
+        records.push(recordJSON.toString());
       }
-
-      records.push(recordJSON.toString());
     }
 
     return JSON.stringify(records);
