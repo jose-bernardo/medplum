@@ -23,7 +23,7 @@ mkdir -p reports
 function execFhirWriteTest() {
 pre_test_warmup 5m
 export VUS=50
-export DURATION=65m
+export DURATION=70m
 
 infoln "Initializing FHIR WRITE test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)"
@@ -36,7 +36,7 @@ infoln " -------------------- "
 function execFhirReadTest() {
 pre_test_warmup 5m
 export VUS=50
-export DURATION=65m
+export DURATION=70m
 
 infoln "Initializing FHIR READ test with $VUS VUs during $DURATION"
 infoln "Start Time: $(date)"
@@ -49,7 +49,7 @@ infoln " -------------------- "
 function execBinaryReadTest() {
 pre_test_warmup 5m
 export VUS=10
-export DURATION=65m
+export DURATION=70m
 
 infoln "Initializing BINARY READ test with $VUS during $DURATION"
 infoln "Start Time: $(date)"
