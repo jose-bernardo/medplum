@@ -10,7 +10,7 @@ const freshWriteOps: (NewRecord)[] = [];
 const matureReadOps: (Access)[] = [];
 const freshReadOps: (Access)[] = [];
 
-const chunkSize = 50;
+const chunkSize = 20;
 
 interface NewRecord {
   recordId: string
@@ -77,7 +77,7 @@ export async function initFabricGateway(serverConfig: MedplumServerConfig): Prom
 
   gateways.push(gateway1, gateway2, gateway3);
 
-  setInterval(verifyLedger, 120000);
+  setInterval(verifyLedger, 300000);
 }
 
 export async function closeFabricGateway(): Promise<void> {
