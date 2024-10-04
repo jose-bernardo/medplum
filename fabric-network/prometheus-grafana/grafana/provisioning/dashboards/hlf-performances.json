@@ -578,11 +578,6 @@
       },
       "links": [],
       "options": {
-        "legend": {
-          "calcs": ["min", "max", "avg", "current", "total"],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
         "tooltip": {
           "mode": "single"
         }
