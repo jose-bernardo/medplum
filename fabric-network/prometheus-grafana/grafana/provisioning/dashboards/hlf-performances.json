@@ -578,6 +578,13 @@
       },
       "links": [],
       "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "tooltip": {
           "mode": "single"
         }
@@ -590,7 +597,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "exemplar": true,
-          "expr": "avg by (name)container_memory_usage_bytes{name!~\"cadvisor|node-exporter|grafana|prometheus||\"} - container_memory_cache{name!~\"cadvisor|node-exporter|grafana|prometheus||\"}",
+          "expr": "container_memory_usage_bytes{name!~\"cadvisor|node-exporter|grafana|prometheus||\"} - container_memory_cache{name!~\"cadvisor|node-exporter|grafana|prometheus||\"}",
           "format": "time_series",
           "hide": false,
           "interval": "",
