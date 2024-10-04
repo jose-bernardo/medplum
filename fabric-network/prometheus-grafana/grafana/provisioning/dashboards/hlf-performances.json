@@ -49,11 +49,8 @@
       "id": 5,
       "legend": {
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "lines": true,
@@ -141,11 +138,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "lines": true,
@@ -256,11 +250,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "links": [],
@@ -350,11 +341,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "links": [],
@@ -404,11 +392,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "panels": [],
@@ -436,11 +421,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "lines": true,
@@ -569,11 +551,8 @@
       "legend": {
         "alignAsTable": true,
         "avg": true,
-        "current": true,
         "max": true,
-        "min": true,
         "show": true,
-        "total": true,
         "values": true
       },
       "links": [],
