@@ -144,7 +144,6 @@
         "current": true,
         "max": true,
         "min": true,
-        "rightSide": true,
         "show": true,
         "total": true,
         "values": true
@@ -254,6 +253,16 @@
         "y": 0
       },
       "id": 31,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      },
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -338,6 +347,16 @@
         "y": 0
       },
       "id": 26,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      },
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -421,6 +440,16 @@
         "y": 0
       },
       "id": 25,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      },
       "links": [],
       "maxDataPoints": 100,
       "options": {
@@ -464,6 +493,16 @@
         "y": 6
       },
       "id": 47,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      },
       "panels": [],
       "title": "Docker Containers Metrics",
       "type": "row"
@@ -492,7 +531,6 @@
         "current": true,
         "max": true,
         "min": true,
-        "rightSide": true,
         "show": true,
         "total": true,
         "values": true
