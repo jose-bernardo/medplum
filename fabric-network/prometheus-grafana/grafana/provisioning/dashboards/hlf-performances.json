@@ -658,7 +658,16 @@
         "y": 7
       },
       "id": 10,
-
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": true,
+        "values": true
+      },
       "links": [],
       "options": {
         "legend": {
