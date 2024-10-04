@@ -670,11 +670,6 @@
       },
       "links": [],
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
         "tooltip": {
           "mode": "single"
         }
