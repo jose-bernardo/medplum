@@ -5,7 +5,7 @@ const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 /**
  * Workload module for the benchmark round.
  */
-class ReadActionWorkload extends WorkloadModuleBase {
+class ReadAccessWorkload extends WorkloadModuleBase {
   /**
    * Initializes the workload module instance.
    */
@@ -42,8 +42,8 @@ class ReadActionWorkload extends WorkloadModuleBase {
     let args = {
       contractId: 'medsky',
       contractVersion: '1.0',
-      contractFunction: 'ReadAction',
-      contractArguments: ['Client' + this.workerIndex + '_CREATE_ACTION' + actionId],
+      contractFunction: 'ReadAccess',
+      contractArguments: ['Client' + this.workerIndex + '_ACCESS' + actionId],
       timeout: 30,
       readOnly: true
     };
@@ -61,7 +61,7 @@ class ReadActionWorkload extends WorkloadModuleBase {
  * @return {WorkloadModuleInterface}
  */
 function createWorkloadModule() {
-  return new ReadActionWorkload();
+  return new ReadAccessWorkload();
 }
 
 module.exports.createWorkloadModule = createWorkloadModule;

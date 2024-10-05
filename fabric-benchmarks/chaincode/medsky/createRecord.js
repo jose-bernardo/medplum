@@ -39,8 +39,7 @@ class CreateRecordWorkload extends WorkloadModuleBase {
       contractFunction: 'CreateRecord',
       contractArguments: [
         'Client' + this.workerIndex + '_RECORD' + recordId,
-        '0a800e7a696fae9733efffe908aac21f2d5b072c7de575e8fef0ac7de5dc164a',
-        'Client' + this.workerIndex + '_CREATE_ACTION' + actionId
+        '0a800e7a696fae9733efffe908aac21f2d5b072c7de575e8fef0ac7de5dc164a'
       ],
       timeout: 30,
     };

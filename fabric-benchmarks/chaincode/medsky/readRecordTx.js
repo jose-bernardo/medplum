@@ -47,7 +47,7 @@ class ReadRecordTxWorkload extends WorkloadModuleBase {
       contractFunction: 'ReadRecordTx',
       contractArguments: [
         'Client' + this.workerIndex + '_RECORD' + recordId,
-        'Client' + this.workerIndex + '_READ_ACTION' + accessId
+        'Client' + this.workerIndex + '_ACCESS' + accessId
       ],
       timeout: 30,
     };
