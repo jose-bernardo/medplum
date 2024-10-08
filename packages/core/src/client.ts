@@ -1633,16 +1633,18 @@ export class MedplumClient extends EventTarget {
    * See the FHIR "read" operation for full details: https://www.hl7.org/fhir/http.html#read
    * @category Read
    * @param resourceType - The FHIR resource type.
-   * @param id - The resource ID.
+   * @param recordId - The resource ID.
+   * @param actionId - The action ID.
    * @param options - Optional fetch options.
    * @returns The resource if available.
    */
   readResource<K extends ResourceType>(
     resourceType: K,
-    id: string,
+    recordId: string,
+    actionId?: string,
     options?: MedplumRequestOptions
   ): ReadablePromise<ExtractResource<K>> {
-    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, id), options);
+    return this.get<ExtractResource<K>>(this.fhirUrl(resourceType, recordId) + `?actionId=${actionId}`, options);
   }
 
   /**
@@ -1677,7 +1679,7 @@ export class MedplumClient extends EventTarget {
     if (!resourceType || !id) {
       return new ReadablePromise(Promise.reject(new Error('Invalid reference')));
     }
-    return this.readResource(resourceType as ResourceType, id, options) as ReadablePromise<T>;
+    return this.readResource(resourceType as ResourceType, id, undefined, options) as ReadablePromise<T>;
   }
 
   /**
@@ -1904,15 +1906,21 @@ export class MedplumClient extends EventTarget {
    * See the FHIR "create" operation for full details: https://www.hl7.org/fhir/http.html#create
    * @category Create
    * @param resource - The FHIR resource to create.
+   * @param actionId - ID of the action entry in the fabric network describing the action executed
    * @param options - Optional fetch options.
    * @returns The result of the create operation.
    */
-  createResource<T extends Resource>(resource: T, options?: MedplumRequestOptions): Promise<T> {
+  createResource<T extends Resource>(resource: T, actionId?: string, options?: MedplumRequestOptions): Promise<T> {
     if (!resource.resourceType) {
       throw new Error('Missing resourceType');
     }
+
+    if (!resource.id) {
+      throw  new Error('Missing id');
+    }
+
     this.invalidateSearches(resource.resourceType);
-    return this.post(this.fhirUrl(resource.resourceType), resource, undefined, options);
+    return this.post(this.fhirUrl(resource.resourceType), {resource: resource, actionId: actionId}, undefined, options);
   }
 
   /**
@@ -1962,7 +1970,7 @@ export class MedplumClient extends EventTarget {
     options?: MedplumRequestOptions
   ): Promise<T> {
     return ((await this.searchOne(resource.resourceType, query, options)) ??
-      this.createResource(resource, options)) as Promise<T>;
+      this.createResource(resource, undefined, options)) as Promise<T>;
   }
 
   /**
@@ -2048,7 +2056,7 @@ export class MedplumClient extends EventTarget {
   ): Promise<Attachment> {
     const createBinaryOptions = normalizeCreateBinaryOptions(arg1, arg2, arg3, arg4);
     const requestOptions = arg5 ?? (typeof arg2 === 'object' ? arg2 : {});
-    const binary = await this.createBinary(createBinaryOptions, requestOptions);
+    const binary = await this.createBinary(createBinaryOptions, undefined, undefined, requestOptions);
     return {
       contentType: createBinaryOptions.contentType,
       url: binary.url,
@@ -2077,16 +2085,20 @@ export class MedplumClient extends EventTarget {
    *
    * @category Create
    * @param createBinaryOptions -The binary options. See `CreateBinaryOptions` for full details.
+   * @param recordId
+   * @param actionId
    * @param requestOptions - Optional fetch options. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @returns The result of the create operation.
    */
-  createBinary(createBinaryOptions: CreateBinaryOptions, requestOptions?: MedplumRequestOptions): Promise<Binary>;
+  createBinary(createBinaryOptions: CreateBinaryOptions, recordId?: string, actionId?: string, requestOptions?: MedplumRequestOptions): Promise<Binary>;
 
   /**
    * @category Create
    * @param data - The binary data to upload.
    * @param filename - Optional filename for the binary.
    * @param contentType - Content type for the binary.
+   * @param recordId
+   * @param actionId
    * @param onProgress - Optional callback for progress events. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @param options - Optional fetch options. **NOTE:** only `options.signal` is respected when `onProgress` is also provided.
    * @returns The result of the create operation.
@@ -2096,17 +2108,22 @@ export class MedplumClient extends EventTarget {
     data: BinarySource,
     filename: string | undefined,
     contentType: string,
+    recordId: string,
+    actionId: string,
     onProgress?: (e: ProgressEvent) => void,
     options?: MedplumRequestOptions
   ): Promise<Binary>;
 
   createBinary(
     arg1: BinarySource | CreateBinaryOptions,
+    recordId: string,
+    actionId: string,
     arg2: string | undefined | MedplumRequestOptions,
     arg3?: string,
     arg4?: (e: ProgressEvent) => void,
     arg5?: MedplumRequestOptions
   ): Promise<Binary> {
+
     const createBinaryOptions = normalizeCreateBinaryOptions(arg1, arg2, arg3, arg4);
     const requestOptions = arg5 ?? (typeof arg2 === 'object' ? arg2 : {});
 
@@ -2116,6 +2133,8 @@ export class MedplumClient extends EventTarget {
     if (filename) {
       url.searchParams.set('_filename', filename);
     }
+    url.searchParams.set('recordId', recordId);
+    url.searchParams.set('actionId', actionId);
 
     if (securityContext?.reference) {
       this.setRequestHeader(requestOptions, 'X-Security-Context', securityContext.reference);
@@ -2241,7 +2260,7 @@ export class MedplumClient extends EventTarget {
     const { docDefinition, tableLayouts, fonts, ...rest } = createPdfOptions;
     const blob = await this.createPdfImpl(docDefinition, tableLayouts, fonts);
     const createBinaryOptions = { ...rest, data: blob, contentType: 'application/pdf' };
-    return this.createBinary(createBinaryOptions, requestOptions);
+    return this.createBinary(createBinaryOptions, undefined, undefined, requestOptions);
   }
 
   /**
@@ -2284,6 +2303,7 @@ export class MedplumClient extends EventTarget {
         sent: new Date().toISOString(),
         payload: [{ contentString: text }],
       },
+      undefined,
       options
     );
   }
@@ -2821,10 +2841,11 @@ export class MedplumClient extends EventTarget {
    * Downloads the URL as a blob. Can accept binary URLs in the form of `Binary/{id}` as well.
    * @category Read
    * @param url - The URL to request. Can be a standard URL or one in the form of `Binary/{id}`.
+   * @param actionId - Action ID
    * @param options - Optional fetch request init options.
    * @returns Promise to the response body as a blob.
    */
-  async download(url: URL | string, options: MedplumRequestOptions = {}): Promise<Blob> {
+  async download(url: URL | string, actionId?: string | undefined, options: MedplumRequestOptions = {}): Promise<Blob> {
     if (this.refreshPromise) {
       await this.refreshPromise;
     }
@@ -2832,6 +2853,8 @@ export class MedplumClient extends EventTarget {
     if (urlString.startsWith(BINARY_URL_PREFIX)) {
       url = this.fhirUrl(urlString);
     }
+
+    url = `${url}?actionId=${actionId}`;
 
     let headers = options.headers as Record<string, string> | undefined;
     if (!headers) {
@@ -2866,6 +2889,7 @@ export class MedplumClient extends EventTarget {
       content: {
         contentType: createMediaOptions.contentType,
       },
+      undefined,
       ...additionalFields,
     });
 
@@ -3859,6 +3883,14 @@ export class MedplumClient extends EventTarget {
    */
   getMasterSubscriptionEmitter(): SubscriptionEmitter {
     return this.getSubscriptionManager().getMasterEmitter();
+  }
+
+  async getPendingRequests(): Promise<void> {
+    await this.post(this.fhirUrl('PendingRequests'), {});
+  }
+
+  async confirmPendingRequest(logEntryId: string): Promise<any> {
+    return this.post(this.fhirUrl('ConfirmPendingRequest'),{logEntryId: logEntryId});
   }
 }
 

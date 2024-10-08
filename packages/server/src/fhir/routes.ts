@@ -1,5 +1,5 @@
-import { allOk, ContentType, isOk, OperationOutcomeError } from '@medplum/core';
-import { FhirRequest, FhirRouter, HttpMethod } from '@medplum/fhir-router';
+import { allOk, ContentType, isOk, badRequest, OperationOutcomeError } from '@medplum/core';
+import { FhirRequest, FhirResponse, FhirRouter, HttpMethod } from '@medplum/fhir-router';
 import { ResourceType } from '@medplum/fhirtypes';
 import { NextFunction, Request, Response, Router } from 'express';
 import { asyncWrap } from '../async';
@@ -39,6 +39,8 @@ import { valueSetValidateOperation } from './operations/valuesetvalidatecode';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { smartConfigurationHandler, smartStylingHandler } from './smart';
+import { createHash } from 'crypto';
+import {appendNewAccess, appendNewRecord} from '../fabricgateway';
 
 export const fhirRouter = Router();
 
@@ -288,7 +290,47 @@ protectedRoutes.use(
       headers: req.headers,
     };
 
-    const result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    let result: FhirResponse;
+
+    const urlSplit = req.originalUrl.split('/');
+
+    if (!request.pathname.includes('$graphql')) {
+      // Read request
+      if (request.method === 'GET') {
+        const accessId = req.query.accessId;
+        if (accessId === undefined) {
+          throw new OperationOutcomeError(badRequest('Access ID not provided.'));
+        }
+
+        appendNewAccess({requestor: JSON.stringify(ctx.profile), resourceType: urlSplit[urlSplit.length - 2], recordId: urlSplit[urlSplit.length - 1], accessId: accessId as string});
+
+        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+
+        if (result.length === 1) {
+          throw new OperationOutcomeError(result[0]);
+        }
+      }
+
+      // Write request
+      else {
+        if (request.body.id === undefined) {
+          throw new OperationOutcomeError(badRequest('Resource without id'));
+        }
+
+        const sha256 = (resource: string): string => {
+          return createHash('sha256')
+            .update(resource)
+            .digest('hex');
+        }
+
+        result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+
+        appendNewRecord({requestor: JSON.stringify(ctx.profile), recordId: request.body.id, resourceType: request.body.resourceType, hash: sha256(JSON.stringify(request.body))});
+      }
+    } else {
+      result = await getInternalFhirRouter().handleRequest(request, ctx.repo);
+    }
+
     if (result.length === 1) {
       if (!isOk(result[0])) {
         throw new OperationOutcomeError(result[0]);

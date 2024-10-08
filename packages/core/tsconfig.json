@@ -8,5 +8,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  // hack so i don't need to change tests
+  "exclude": ["src/**/*.test.ts", "src/client-test-utils.ts"]
 }

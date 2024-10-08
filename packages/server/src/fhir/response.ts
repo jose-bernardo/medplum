@@ -46,7 +46,10 @@ export async function sendResponse(
       res.send(Buffer.from(body.data, 'base64'));
     } else {
       const stream = await getBinaryStorage().readBinary(body);
-      stream.pipe(res);
+      stream.pipe(res)
+      stream.on('close', () => {
+        res.end();
+      })
     }
     return;
   }

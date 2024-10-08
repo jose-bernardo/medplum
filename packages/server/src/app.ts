@@ -44,6 +44,7 @@ import { storageRouter } from './storage';
 import { closeWebSockets, initWebSockets } from './websockets';
 import { wellKnownRouter } from './wellknown';
 import { closeWorkers, initWorkers } from './workers';
+import { closeFabricGateway, initFabricGateway } from './fabricgateway';
 
 let server: http.Server | undefined = undefined;
 
@@ -200,6 +201,7 @@ export function initAppServices(config: MedplumServerConfig): Promise<void> {
     await initDatabase(config);
     await seedDatabase();
     await initKeys(config);
+    initFabricGateway(config).catch(err => console.error(err));
     initBinaryStorage(config.binaryStorage);
     initWorkers(config);
     initHeartbeat(config);
@@ -212,6 +214,7 @@ export async function shutdownApp(): Promise<void> {
   await closeWorkers();
   await closeDatabase();
   await closeRedis();
+  await closeFabricGateway();
   closeRateLimiter();
 
   if (server) {

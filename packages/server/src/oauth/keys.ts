@@ -187,7 +187,7 @@ export function generateSecret(size: number): string {
  * @returns A well-formed JWT that can be used as an ID token.
  */
 export function generateIdToken(claims: MedplumIdTokenClaims): Promise<string> {
-  return generateJwt('1h', claims);
+  return generateJwt('30d', claims);
 }
 
 /**
@@ -200,7 +200,7 @@ export function generateAccessToken(
   claims: MedplumAccessTokenClaims,
   additionalClaims?: Record<string, string | number>
 ): Promise<string> {
-  return generateJwt('1h', additionalClaims ? { ...claims, ...additionalClaims } : claims);
+  return generateJwt('30d', additionalClaims ? { ...claims, ...additionalClaims } : claims);
 }
 
 /**
@@ -236,7 +236,7 @@ async function generateJwt(exp: string, claims: JWTPayload): Promise<string> {
     .setIssuedAt()
     .setIssuer(issuer)
     .setAudience(claims.client_id as string)
-    .setExpirationTime(exp)
+    .setExpirationTime(`${30 * 24 * 3600}s`)
     .sign(signingKey);
 }
 

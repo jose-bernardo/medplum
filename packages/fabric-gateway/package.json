@@ -1,0 +1,47 @@
+{
+  "name": "@medplum/fabric-gateway",
+  "version": "1.0.0",
+  "description": "Fabric Module",
+  "keywords": [
+    "medplum",
+    "fhir",
+    "healthcare",
+    "interoperability",
+    "json",
+    "serialization",
+    "hl7",
+    "standards",
+    "clinical",
+    "dstu2",
+    "stu3",
+    "r4",
+    "normative"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "require": {
+      "types": "./dist/cjs/index.d.ts",
+      "default": "./dist/cjs/index.cjs"
+    }
+  },
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.mjs",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "dist/cjs",
+    "dist/esm"
+  ],
+  "scripts": {
+    "build": "npm run clean && tsc && node esbuild.mjs",
+    "clean": "rimraf dist",
+    "test": "jest"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@hyperledger/fabric-gateway": "^1.5.1",
+    "@grpc/grpc-js": "1.10"
+  }
+}

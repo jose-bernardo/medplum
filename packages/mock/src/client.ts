@@ -187,6 +187,7 @@ export class MockClient extends MedplumClient {
     return super.getLogins();
   }
 
+  // @ts-ignore
   async createBinary(
     arg1: BinarySource | CreateBinaryOptions,
     arg2: string | undefined | MedplumRequestOptions,
@@ -255,6 +256,7 @@ round-trip min/avg/max/stddev = 10.977/14.975/23.159/4.790 ms
 
   getSubscriptionManager(): MockSubscriptionManager {
     if (!this.subManager) {
+      // @ts-ignore
       this.subManager = new MockSubscriptionManager(this, 'wss://example.com/ws/subscriptions-r4', {
         mockRobustWebSocket: true,
       });

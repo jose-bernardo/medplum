@@ -1,0 +1,12 @@
+import*as i from"@grpc/grpc-js";import{connect as d,signers as h}from"@hyperledger/fabric-gateway";import*as a from"crypto";import{promises as s}from"fs";var r=new TextDecoder,o=class{constructor(t){this.options=t}displayFabricParameters(){return`channelName:       ${this.options.channelName}
+chaincodeName:     ${this.options.chaincodeName}
+mspId:             ${this.options.mspId}
+keyPath:           ${this.options.keyPath}
+certPath:          ${this.options.certPath}
+tlsCertPath:       ${this.options.tlsCertPath}
+peerEndpoint:      ${this.options.peerEndpoint}
+peerHostAlias:     ${this.options.peerHostAlias}`}async newSigner(){let t=this.options.keyPath,e=await s.readFile(t),n=a.createPrivateKey(e);return h.newPrivateKeySigner(n)}async newIdentity(){let t=this.options.certPath,e=await s.readFile(t);return{mspId:this.options.mspId,credentials:e}}async newGrpcConnection(){let t=await s.readFile(this.options.tlsCertPath),e=i.credentials.createSsl(t);return new i.Client(this.options.peerEndpoint,e,{"grpc.ssl_target_name_override":this.options.peerHostAlias})}async connect(){this.client=await this.newGrpcConnection(),this.signer=await this.newSigner(),this.gateway=d({client:this.client,identity:await this.newIdentity(),signer:this.signer,evaluateOptions:()=>({deadline:Date.now()+1e4}),endorseOptions:()=>({deadline:Date.now()+15e3}),submitOptions:()=>({deadline:Date.now()+1e4}),commitStatusOptions:()=>({deadline:Date.now()+6e4})});let t=this.gateway.getNetwork(this.options.channelName);this.contract=t.getContract(this.options.chaincodeName)}async readAccesses(t){if(!this.contract)throw new Error("contract not defined");console.log(`
+--> Evaluate Transaction: ReadAccesses`);let e=await this.contract.evaluateTransaction("ReadAccesses",JSON.stringify(t)),n=r.decode(e);return JSON.parse(n)}async readRecords(t){if(!this.contract)throw new Error("contract not defined");console.log(`
+--> Evaluate Transaction: ReadRecords`);let e=await this.contract.evaluateTransaction("ReadRecords",JSON.stringify(t)),n=r.decode(e);return JSON.parse(n)}async logBadAction(t,e,n,c,p){if(!this.contract)throw new Error("contract not defined");console.log(`
+--> Submit Transaction: LogBadAction`),await this.contract.submitTransaction("LogBadAction",t,e,n,c,p)}async close(){this.client&&this.gateway&&(this.client.close(),this.gateway.close())}};export{o as FabricGateway};
+//# sourceMappingURL=index.mjs.map
