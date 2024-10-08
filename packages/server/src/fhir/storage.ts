@@ -5,6 +5,7 @@ import { resolve, sep } from 'path';
 import { Readable, pipeline } from 'stream';
 import { S3Storage } from '../cloud/aws/storage';
 import { getConfig } from '../config';
+import {RockFSStorage} from "../cloud/rockfs/storage";
 
 /**
  * Binary input type.
@@ -27,6 +28,9 @@ let binaryStorage: BinaryStorage | undefined = undefined;
 export function initBinaryStorage(type?: string): void {
   if (type?.startsWith('s3:')) {
     binaryStorage = new S3Storage(type.replace('s3:', ''));
+  } else if (type?.startsWith('rockfs:')) {
+    binaryStorage = new RockFSStorage(type.replace('rockfs:', 'http://'));
+    console.log('USING ROCKFS');
   } else if (type?.startsWith('file:')) {
     binaryStorage = new FileSystemStorage(type.replace('file:', ''));
   } else {
@@ -118,11 +122,6 @@ class FileSystemStorage implements BinaryStorage {
   }
 
   async copyFile(sourceKey: string, destinationKey: string): Promise<void> {
-    const fullDestinationPath = resolve(this.baseDir, destinationKey);
-    const destDir = fullDestinationPath.substring(0, fullDestinationPath.lastIndexOf(sep));
-    if (!existsSync(destDir)) {
-      mkdirSync(destDir, { recursive: true });
-    }
     copyFileSync(resolve(this.baseDir, sourceKey), resolve(this.baseDir, destinationKey));
   }
 

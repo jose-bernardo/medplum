@@ -1,4 +1,4 @@
-import { ContentType, allOk, badRequest, created, isResource } from '@medplum/core';
+import {ContentType, allOk, badRequest, created, isResource} from '@medplum/core';
 import { Binary, OperationOutcome } from '@medplum/fhirtypes';
 import { Request, Response, Router } from 'express';
 import internal from 'stream';
@@ -9,6 +9,9 @@ import { authenticateRequest } from '../oauth/middleware';
 import { sendOutcome } from './outcomes';
 import { sendResponse } from './response';
 import { BinarySource, getBinaryStorage } from './storage';
+import {appendNewAccess, appendNewRecord} from "../fabricgateway";
+import {createHash} from "crypto";
+import {PassThrough, Readable} from "node:stream";
 
 export const binaryRouter = Router().use(authenticateRequest);
 
@@ -20,19 +23,35 @@ binaryRouter.put('/:id', asyncWrap(handleBinaryWriteRequest));
 
 // Get binary content
 binaryRouter.get(
-  '/:id',
+  '/:recordId',
   asyncWrap(async (req: Request, res: Response) => {
     const ctx = getAuthenticatedContext();
-    const { id } = req.params;
-    const binary = await ctx.repo.readResource<Binary>('Binary', id);
+    const { recordId } = req.params;
+
+    const accessId = req.query.accessId as string;
+    if (accessId === undefined) {
+      sendOutcome(res, badRequest('Access ID not provided.'));
+      return;
+    }
+
+    appendNewAccess({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, accessId: accessId});
+
+    const binary = await ctx.repo.readResource<Binary>('Binary', recordId);
     await sendResponse(req, res, allOk, binary);
   })
 );
 
 async function handleBinaryWriteRequest(req: Request, res: Response): Promise<void> {
   const ctx = getAuthenticatedContext();
+
   const create = req.method === 'POST';
-  const { id } = req.params;
+
+  const recordId = req.query.recordId as string;
+  if (recordId === undefined) {
+    sendOutcome(res, badRequest('RecordID not provided.'));
+    return;
+  }
+
   const contentType = req.get('Content-Type') as string;
 
   const stream = getContentStream(req);
@@ -60,7 +79,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
       // The binary handler does *not* use Express body-parser in order to support raw binary data.
       // Therefore, we need to manually parse the body stream as JSON.
       const body = JSON.parse(str);
-      if (isResource(body) && body.resourceType === 'Binary' && body.id === id) {
+      if (isResource(body) && body.resourceType === 'Binary' && body.id === recordId) {
         // Special case where the content is actually a Binary resource.
         binary = body as Binary;
         binaryContentSpecialCase = true;
@@ -80,7 +99,7 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     const securityContext = req.get('X-Security-Context');
     binary = {
       resourceType: 'Binary',
-      id,
+      id: recordId,
       contentType,
       securityContext: securityContext ? { reference: securityContext } : undefined,
     };
@@ -96,9 +115,22 @@ async function handleBinaryWriteRequest(req: Request, res: Response): Promise<vo
     outcome = allOk;
   }
 
+  const stream1 = new PassThrough();
+  const stream2 = new PassThrough();
+
+  const hash = createHash('sha256');
+
+  (binarySource as Readable).pipe(stream1);
+  (binarySource as Readable).pipe(stream2);
+
+  stream1.pipe(hash).on('finish', () => {
+    const hashh = hash.digest('hex');
+    appendNewRecord({requestor: JSON.stringify(ctx.profile), resourceType: 'Binary', recordId: recordId, hash: hashh})
+  });
+
   if (!binaryContentSpecialCase) {
-    const filename = req.query['_filename'] as string | undefined;
-    await getBinaryStorage().writeBinary(binary, filename, contentType, binarySource);
+    const filename = undefined;
+    await getBinaryStorage().writeBinary(binary, filename, contentType, stream2);
   }
 
   await sendResponse(req, res, outcome, {

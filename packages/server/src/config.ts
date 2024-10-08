@@ -27,6 +27,7 @@ export interface MedplumServerConfig {
   database: MedplumDatabaseConfig;
   databaseProxyEndpoint?: string;
   redis: MedplumRedisConfig;
+  fabric: MedplumFabricConfig[];
   emailProvider?: 'none' | 'awsses' | 'smtp';
   smtp?: MedplumSmtpConfig;
   bullmq?: MedplumBullmqConfig;
@@ -116,6 +117,17 @@ export interface MedplumRedisConfig {
   /** The logical database to use for Redis. See: https://redis.io/commands/select/. Default is `0`. */
   db?: number;
   tls?: Record<string, unknown>;
+}
+
+export interface MedplumFabricConfig {
+  channelName: string
+  chaincodeName: string
+  mspId: string
+  keyPath: string
+  certPath: string
+  tlsCertPath: string
+  peerEndpoint: string
+  peerHostAlias: string
 }
 
 export interface MedplumSmtpConfig {
